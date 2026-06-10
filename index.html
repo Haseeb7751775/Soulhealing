@@ -4439,7 +4439,7 @@ function cpRenderBookings(){
     // Load from time_slots (admin-assigned)
     const r = localStorage.getItem('sh_time_slots');
     const slots = r ? JSON.parse(r) : [];
-    const mySlots = slots.filter(s=>s.assignedEmail && s.assignedEmail.toLowerCase()===cpCurrentEmail.toLowerCase());
+    const assignedSlots = slots.filter(s=>s.assignedEmail && s.assignedEmail.toLowerCase()===cpCurrentEmail.toLowerCase());
 
     // Also load from admin_messages (client-submitted bookings not yet assigned)
     const msgRaw = localStorage.getItem('sh_admin_messages') || localStorage.getItem('sh_admin_messages'.replace('sh_','')) || '[]';
@@ -4452,7 +4452,7 @@ function cpRenderBookings(){
     const myRequests = adminMsgs.filter(m=>m.type==='booking' && m.email && m.email.toLowerCase()===cpCurrentEmail.toLowerCase());
 
     // Merge: slots (admin-confirmed) + requests not already in slots
-    const slotRefs = new Set(mySlots.map(s=>s.bookingRef));
+    const slotRefs = new Set(assignedSlots.map(s=>s.bookingRef));
     const pendingRequests = myRequests.filter(m=>!slotRefs.has(m.ref)).map(m=>({
       id: m.id,
       bookingRef: m.ref,
@@ -4469,7 +4469,7 @@ function cpRenderBookings(){
       isPending: true
     }));
 
-    const allBookings = [...mySlots, ...pendingRequests];
+    const allBookings = [...assignedSlots, ...pendingRequests];
 
     if(!allBookings.length){
       wrap.innerHTML = `<div style="text-align:center;padding:3rem 1rem;color:rgba(245,240,232,.35);">
