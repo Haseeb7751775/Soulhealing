@@ -2267,10 +2267,10 @@ body{
         <!-- ACCOUNT TRANSFER (admin-configured) -->
         <div class="bk-pv active" id="bkpv-account">
           <div id="bk-account-info-wrap">
-            <!-- Populated dynamically from admin payment details -->
             <div class="bk-info-box" style="text-align:center;color:rgba(245,240,232,.3);font-style:italic;">Payment account details will appear here once the admin has configured them.</div>
           </div>
           <div class="bk-field" style="margin-top:.5rem;"><label>Your Reference / Note (optional)</label><input type="text" id="account_ref" placeholder="e.g. your name or booking purpose"/></div>
+          <div class="bk-field"><label>Upload Payment Screenshot (optional)</label><input type="file" id="pay_screenshot_account" accept="image/*" style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/><div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">Upload a screenshot of your payment confirmation.</div></div>
           <div id="bk-account-admin-note" class="bk-pay-admin-note" style="display:none;"></div>
         </div>
 
@@ -2278,6 +2278,7 @@ body{
         <div class="bk-pv" id="bkpv-bank">
           <div class="bk-info-box" id="bk-bank-info">Bank transfer details will be sent to your email within <strong>30 minutes</strong> of confirming your booking.</div>
           <div class="bk-field"><label>Your Bank (optional)</label><input type="text" id="bank_name" placeholder="e.g. Chase, Wells Fargo…"/></div>
+          <div class="bk-field"><label>Upload Payment Screenshot (optional)</label><input type="file" id="pay_screenshot_bank" accept="image/*" style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/><div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">Upload a screenshot of your payment confirmation.</div></div>
           <div id="bk-bank-admin-note" class="bk-pay-admin-note" style="display:none;"></div>
         </div>
 
@@ -2285,6 +2286,7 @@ body{
         <div class="bk-pv" id="bkpv-chime">
           <div class="bk-info-box" id="bk-chime-info">Send payment via <strong>Chime</strong> to the handle below. Include your name as the payment note so we can match your booking.</div>
           <div class="bk-field"><label>Your Chime Username (optional)</label><input type="text" id="chime_user" placeholder="@yourchimeusername"/></div>
+          <div class="bk-field"><label>Upload Payment Screenshot (optional)</label><input type="file" id="pay_screenshot_chime" accept="image/*" style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/><div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">Upload a screenshot of your Chime payment.</div></div>
           <div id="bk-chime-admin-note" class="bk-pay-admin-note" style="display:none;"></div>
         </div>
 
@@ -2292,6 +2294,7 @@ body{
         <div class="bk-pv" id="bkpv-cashapp">
           <div class="bk-info-box" id="bk-cashapp-info">Send payment via <strong>Cash App</strong> to the $Cashtag below. Add your name in the payment note to confirm your booking.</div>
           <div class="bk-field"><label>Your CashApp $Cashtag (optional)</label><input type="text" id="cashapp_tag" placeholder="$yourcashtag"/></div>
+          <div class="bk-field"><label>Upload Payment Screenshot (optional)</label><input type="file" id="pay_screenshot_cashapp" accept="image/*" style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/><div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">Upload a screenshot of your CashApp payment.</div></div>
           <div id="bk-cashapp-admin-note" class="bk-pay-admin-note" style="display:none;"></div>
         </div>
 
@@ -2299,6 +2302,7 @@ body{
         <div class="bk-pv" id="bkpv-paypal">
           <div class="bk-info-box" id="bk-paypal-info">Send payment via <strong>PayPal</strong> to the address below. Please use Friends &amp; Family to avoid fees, and include your name in the note.</div>
           <div class="bk-field"><label>Your PayPal Email (optional)</label><input type="text" id="paypal_email" placeholder="e.g. you@email.com"/></div>
+          <div class="bk-field"><label>Upload Payment Screenshot (optional)</label><input type="file" id="pay_screenshot_paypal" accept="image/*" style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/><div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">Upload a screenshot of your PayPal payment.</div></div>
           <div id="bk-paypal-admin-note" class="bk-pay-admin-note" style="display:none;"></div>
         </div>
         <div class="bk-btn-row"><button class="btn-bk-ghost" onclick="bkStep(1)">← Back</button><button class="btn-bk-gold" onclick="bkStep(3)">Review Booking →</button></div>
@@ -3279,6 +3283,13 @@ async function bkConfirm(){
   if(bkPay==='cashapp') { payExtra.cashapp_tag=document.getElementById('cashapp_tag')?.value||''; }
   if(bkPay==='paypal')  { payExtra.paypal_email=document.getElementById('paypal_email')?.value||''; }
 
+  // Save payment screenshot filename if uploaded
+  const screenshotInput = document.getElementById('pay_screenshot_'+bkPay);
+  if(screenshotInput && screenshotInput.files && screenshotInput.files[0]){
+    payExtra.screenshot_name = screenshotInput.files[0].name;
+    payExtra.screenshot_uploaded = true;
+  }
+
   const clientEmail = document.getElementById('bk_email').value||'';
   const clientName  = (document.getElementById('bk_fname').value+' '+document.getElementById('bk_lname').value).trim()||'—';
 
@@ -4210,7 +4221,7 @@ async function cpRequestAccess(){
     return; 
   }
 
-  // Check if registered OR has bookings/messages
+  // Check if registered
   let hasAccount = false;
   try {
     const registered = JSON.parse(localStorage.getItem('sh_registered_clients') || '[]');
@@ -4227,36 +4238,12 @@ async function cpRequestAccess(){
     document.getElementById('cp-login-msg').innerHTML = '<span style="color:#e05252;">No account found. Please <a href="javascript:void(0)" onclick="cpSwitchAuthTab(\'signup\')" style="color:var(--gold);">sign up</a> or <a href="#contact" onclick="closeClientPortal()" style="color:var(--gold);">contact us</a> first.</span>';
     return;
   }
-  
-  // Generate a 6-digit code and store it
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  cpCurrentCode = code;
+
+  // Direct login — no OTP needed
   cpCurrentEmail = email;
-  const expiry = Date.now() + 10 * 60 * 1000;
-  sessionStorage.setItem('cp_pending_code', JSON.stringify({ email, code, expiry }));
-  
-  document.getElementById('cp-sent-email').textContent = email;
-  document.getElementById('cp-login-form').style.display = 'none';
-  document.getElementById('cp-magic-sent').style.display = 'block';
-  document.getElementById('cp-code-msg').innerHTML = '';
-
-  // Try sending real email via EmailJS
-  const emailResult = await cpSendEmail(EMAILJS_CODE_TEMPLATE, {
-    to_email: email,
-    verification_code: code,
-    to_name: email.split('@')[0],
-    expiry_minutes: '10'
-  });
-
-  setTimeout(()=>{
-    if(emailResult.ok){
-      document.getElementById('cp-code-msg').innerHTML =
-        '<div style="background:rgba(76,175,116,.07);border:1px solid rgba(76,175,116,.2);padding:.5rem .9rem;border-radius:2px;font-size:.75rem;color:rgba(76,175,116,.8);">✓ Verification code sent to your email. Please check your inbox.</div>';
-    } else {
-      document.getElementById('cp-code-msg').innerHTML =
-        '<div style="background:rgba(224,82,82,.07);border:1px solid rgba(224,82,82,.2);padding:.5rem .9rem;border-radius:2px;font-size:.75rem;color:rgba(224,82,82,.8);">⚠ Email failed: ' + (emailResult.err||'Unknown error') + '</div>';
-    }
-  }, 300);
+  sessionStorage.setItem('cp_session', JSON.stringify({ email, loginAt: Date.now() }));
+  document.getElementById('cp-login-msg').innerHTML = '<span style="color:#4caf74;">✓ Welcome back! Logging you in…</span>';
+  setTimeout(()=>{ cpEnterDashboard(); }, 800);
 }
 
 function cpBackToEmail(){
