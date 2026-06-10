@@ -3251,6 +3251,9 @@ async function bkConfirm(){
   document.getElementById('bk-ref').textContent='REF: '+ref;
   const s=SVCS[bkSvc];
 
+  // Use selected session type if available, fallback to SVCS
+  const selectedSessionType = document.getElementById('bk_session_type')?.value || s.name;
+
   // Read global auto-tag setting from admin settings
   let autoTag='paid';
   try{ const settingsRaw=shGet('admin_settings'); if(settingsRaw){ const settings=JSON.parse(settingsRaw.value); if(settings.autoPayTag && settings.autoPayTag!=='none') autoTag=settings.autoPayTag; else if(settings.autoPayTag==='none') autoTag=null; } }catch(e){}
@@ -3276,16 +3279,45 @@ async function bkConfirm(){
   if(bkPay==='cashapp') { payExtra.cashapp_tag=document.getElementById('cashapp_tag')?.value||''; }
   if(bkPay==='paypal')  { payExtra.paypal_email=document.getElementById('paypal_email')?.value||''; }
 
+  const clientEmail = document.getElementById('bk_email').value||'';
+  const clientName  = (document.getElementById('bk_fname').value+' '+document.getElementById('bk_lname').value).trim()||'—';
+
   const entry={
-    id:'bk_'+Date.now(),type:'booking',ref,service:s.name,
-    name:(document.getElementById('bk_fname').value+' '+document.getElementById('bk_lname').value).trim()||'—',
-    email:document.getElementById('bk_email').value||'',phone:document.getElementById('bk_phone').value||'',
+    id:'bk_'+Date.now(),type:'booking',ref,service:selectedSessionType,
+    name:clientName,
+    email:clientEmail,phone:document.getElementById('bk_phone').value||'',
     state:document.getElementById('bk_state').value||'',message:document.getElementById('bk_msg').value||'',
     notes:document.getElementById('bk_notes').value||'',date:document.getElementById('bk_date').value||'',
     time:document.getElementById('bk_time').value||'',format:document.getElementById('bk_format').value||'',
     payment:bkPay,payExtra,amount:bkAmt,ts:new Date().toISOString(),read:false,tags,adminReplies:[]
   };
+
+  // Save to admin messages
   try{ let list=[]; try{ const r=shGet('admin_messages'); if(r) list=JSON.parse(r.value); }catch(e){} list.unshift(entry); shSet('admin_messages',JSON.stringify(list)); }catch(e){}
+
+  // Also save to time_slots so it shows in the client portal "My Bookings"
+  try{
+    const slotsRaw = localStorage.getItem('sh_time_slots');
+    const slots = slotsRaw ? JSON.parse(slotsRaw) : [];
+    const newSlot = {
+      id: entry.id,
+      bookingRef: ref,
+      service: selectedSessionType,
+      assignedEmail: clientEmail,
+      assignedName: clientName,
+      date: document.getElementById('bk_date').value || '',
+      start: document.getElementById('bk_time').value || '',
+      end: '',
+      payStatus: 'pending',
+      amount: bkAmt,
+      notes: document.getElementById('bk_notes').value || '',
+      ts: new Date().toISOString()
+    };
+    slots.unshift(newSlot);
+    localStorage.setItem('sh_time_slots', JSON.stringify(slots));
+    if(_bc) _bc.postMessage({key:'time_slots', val: JSON.stringify(slots)});
+  }catch(e){}
+
   document.getElementById('bk-panel').style.display='none';
   document.getElementById('bk-success').classList.add('active');
 }
@@ -4403,13 +4435,43 @@ function cpShowTab(tab, el){
 function cpRenderBookings(){
   const wrap = document.getElementById('cp-bookings-list');
   if(!wrap) return;
-  // Load slots assigned to this client
   try {
+    // Load from time_slots (admin-assigned)
     const r = localStorage.getItem('sh_time_slots');
     const slots = r ? JSON.parse(r) : [];
     const mySlots = slots.filter(s=>s.assignedEmail && s.assignedEmail.toLowerCase()===cpCurrentEmail.toLowerCase());
-    
-    if(!mySlots.length){
+
+    // Also load from admin_messages (client-submitted bookings not yet assigned)
+    const msgRaw = localStorage.getItem('sh_admin_messages') || localStorage.getItem('sh_admin_messages'.replace('sh_','')) || '[]';
+    let adminMsgs = [];
+    try { adminMsgs = JSON.parse(msgRaw); } catch(e){}
+    // Also check shGet key
+    const shMsgRaw = shGet('admin_messages');
+    if(shMsgRaw){ try{ adminMsgs = JSON.parse(shMsgRaw.value); }catch(e){} }
+
+    const myRequests = adminMsgs.filter(m=>m.type==='booking' && m.email && m.email.toLowerCase()===cpCurrentEmail.toLowerCase());
+
+    // Merge: slots (admin-confirmed) + requests not already in slots
+    const slotRefs = new Set(mySlots.map(s=>s.bookingRef));
+    const pendingRequests = myRequests.filter(m=>!slotRefs.has(m.ref)).map(m=>({
+      id: m.id,
+      bookingRef: m.ref,
+      service: m.service || 'Healing Session',
+      assignedEmail: m.email,
+      assignedName: m.name,
+      date: m.date || '',
+      start: m.time || '',
+      end: '',
+      payStatus: 'pending',
+      amount: m.amount || '',
+      notes: m.notes || '',
+      ts: m.ts,
+      isPending: true
+    }));
+
+    const allBookings = [...mySlots, ...pendingRequests];
+
+    if(!allBookings.length){
       wrap.innerHTML = `<div style="text-align:center;padding:3rem 1rem;color:rgba(245,240,232,.35);">
         <div style="font-size:2rem;margin-bottom:.75rem;">📅</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;margin-bottom:.4rem;color:rgba(245,240,232,.5);">No Bookings Yet</div>
@@ -4418,25 +4480,28 @@ function cpRenderBookings(){
       </div>`;
       return;
     }
+    const mySlots = allBookings;
     
     const now = new Date();
-    const upcoming = mySlots.filter(s=>new Date(s.date+'T'+s.end)>=now).sort((a,b)=>new Date(a.date+a.start)-new Date(b.date+b.start));
-    const past = mySlots.filter(s=>new Date(s.date+'T'+s.end)<now).sort((a,b)=>new Date(b.date+b.start)-new Date(a.date+a.start));
+    const upcoming = mySlots.filter(s=> !s.date || new Date(s.date+'T23:59')>=now).sort((a,b)=>new Date(a.date||'9999')-new Date(b.date||'9999'));
+    const past = mySlots.filter(s=> s.date && new Date(s.date+'T23:59')<now).sort((a,b)=>new Date(b.date)-new Date(a.date));
     
     const renderSlotCard = (s, isPast) => {
       const payColors = {paid:'#4caf74',pending:'#b8922a',partial:'#5b9bd5',waived:'rgba(245,240,232,.4)'};
       const payLabels = {paid:'✓ Paid',pending:'⏳ Payment Pending',partial:'◑ Partial Payment',waived:'— Waived'};
-      const dateStr = cpFmtDate(s.date);
+      const dateStr = s.date ? cpFmtDate(s.date) : '—';
+      const pendingBadge = s.isPending ? `<span style="font-size:.65rem;padding:.18rem .65rem;border-radius:2px;background:rgba(184,146,42,.1);color:var(--gold);border:1px solid rgba(184,146,42,.25);margin-bottom:.5rem;display:inline-block;">🕐 Awaiting Admin Confirmation</span><br>` : '';
       return `<div style="background:rgba(255,255,255,.025);border:1px solid rgba(184,146,42,.${isPast?'08':'15'});margin-bottom:.85rem;padding:1.2rem 1.4rem;position:relative;opacity:${isPast?'.65':'1'};">
         ${!isPast?'<div style="position:absolute;top:.8rem;right:.9rem;width:8px;height:8px;border-radius:50%;background:#4caf74;animation:pulse 2s ease-in-out infinite;"></div>':''}
         <div style="display:flex;gap:1rem;align-items:flex-start;">
           <div style="text-align:center;background:rgba(184,146,42,.08);border:1px solid rgba(184,146,42,.15);padding:.6rem .8rem;min-width:56px;flex-shrink:0;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:${isPast?'rgba(245,240,232,.4)':'var(--gold)'};line-height:1;">${new Date(s.date+'T12:00:00').getDate()}</div>
-            <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,240,232,.4);">${new Date(s.date+'T12:00:00').toLocaleDateString([],{month:'short'})}</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:${isPast?'rgba(245,240,232,.4)':'var(--gold)'};line-height:1;">${s.date?new Date(s.date+'T12:00:00').getDate():'—'}</div>
+            <div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,240,232,.4);">${s.date?new Date(s.date+'T12:00:00').toLocaleDateString([],{month:'short'}):'TBD'}</div>
           </div>
           <div style="flex:1;min-width:0;">
+            ${pendingBadge}
             <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#f5f0e8;margin-bottom:.2rem;">${s.service||'Healing Session'}</div>
-            <div style="font-size:.78rem;color:rgba(245,240,232,.5);margin-bottom:.5rem;">${dateStr} &nbsp;·&nbsp; ${s.start} – ${s.end}</div>
+            <div style="font-size:.78rem;color:rgba(245,240,232,.5);margin-bottom:.5rem;">${dateStr} &nbsp;·&nbsp; ${s.start||'Time TBD'}</div>
             <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;">
               <span style="font-size:.68rem;padding:.18rem .55rem;border-radius:2px;background:rgba(${s.payStatus==='paid'?'76,175,116':'184,146,42'},.12);color:${payColors[s.payStatus]||payColors.pending};border:1px solid ${payColors[s.payStatus]||payColors.pending}25;">${payLabels[s.payStatus]||payLabels.pending}</span>
               ${s.amount?`<span style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:#4caf74;">$${s.amount}</span>`:''}
@@ -4445,10 +4510,6 @@ function cpRenderBookings(){
             ${s.notes?`<div style="margin-top:.6rem;font-size:.75rem;color:rgba(245,240,232,.4);font-style:italic;">${cpEsc(s.notes)}</div>`:''}
           </div>
         </div>
-        ${!isPast?`<div style="margin-top:1rem;padding-top:.75rem;border-top:1px solid rgba(184,146,42,.08);display:flex;gap:.5rem;">
-          <button onclick="cpRequestReschedule('${s.id}','${cpEsc(s.date+' '+s.start)}')" style="background:rgba(91,155,213,.1);border:1px solid rgba(91,155,213,.2);color:#5b9bd5;font-size:.65rem;padding:.3rem .75rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;letter-spacing:.05em;">↺ Request Reschedule</button>
-          <button onclick="cpRequestCancel('${s.id}','${cpEsc(s.service||'session')}')" style="background:rgba(224,82,82,.08);border:1px solid rgba(224,82,82,.15);color:#e05252;font-size:.65rem;padding:.3rem .75rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;letter-spacing:.05em;">✕ Request Cancel</button>
-        </div>`:''}
       </div>`;
     };
     
