@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Soul Healing — Command center for the client portal and admin dashboard."/>
+<title>Soul Healing — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d0b10;--surface:#13101a;--card:#1a1520;
+  --border:rgba(184,146,42,.18);--gold:#b8922a;--gold-l:#e8d5a3;
+  --cream:#f5f0e8;--muted:rgba(245,240,232,.38);
+  --green:#4caf74;--blue:#5b9bd5;--red:#e05252;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
+
+.logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:var(--cream);text-align:center;margin-bottom:.3rem;letter-spacing:.04em;}
+.logo span{color:var(--gold);}
+.tagline{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:3rem;}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:720px;width:100%;}
+
+.card{background:var(--card);border:1px solid var(--border);padding:2.5rem 2rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;transition:border-color .25s,background .25s,transform .2s,box-shadow .25s;cursor:pointer;text-decoration:none;color:inherit;border-radius:2px;}
+.card:hover{border-color:rgba(184,146,42,.5);background:#211c2c;transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.4);}
+.card:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+
+.card-icon{font-size:2.5rem;margin-bottom:.25rem;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--cream);}
+.card-desc{font-size:.82rem;color:var(--muted);line-height:1.7;max-width:230px;}
+.card-status{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:.4rem;margin-top:-.25rem;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);}
+.status-dot.live{background:var(--green);animation:pulse 2s ease-in-out infinite;}
+.status-dot.open{background:var(--blue);}
+
+.card-btn{margin-top:.5rem;background:transparent;border:1px solid rgba(184,146,42,.35);color:var(--gold);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;padding:.6rem 1.5rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.card-btn:hover{background:var(--gold);color:var(--bg);}
+
+.card.admin .card-btn{border-color:rgba(91,155,213,.35);color:var(--blue);}
+.card.admin .card-btn:hover{background:var(--blue);color:#fff;}
+
+/* Sync status banner */
+.sync-banner{max-width:720px;width:100%;margin-top:1.5rem;background:rgba(76,175,116,.06);border:1px solid rgba(76,175,116,.18);padding:1rem 1.4rem;display:flex;align-items:center;gap:1rem;}
+.sync-banner.warn{background:rgba(224,82,82,.06);border-color:rgba(224,82,82,.18);}
+.sync-dot-wrap{flex-shrink:0;}
+.sync-live{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+.sync-warn{width:10px;height:10px;border-radius:50%;background:var(--red);}
+.sync-text{flex:1;}
+.sync-title{font-size:.78rem;font-weight:500;color:var(--cream);}
+.sync-sub{font-size:.7rem;color:var(--muted);margin-top:2px;}
+
+/* Live message counter */
+.msg-counter{max-width:720px;width:100%;margin-top:.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
+.mc-item{background:var(--card);border:1px solid var(--border);padding:.65rem .9rem;display:flex;flex-direction:column;gap:.2rem;}
+.mc-num{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;line-height:1;}
+.mc-lbl{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.mc-item.c-gold .mc-num{color:var(--gold);}
+.mc-item.c-green .mc-num{color:var(--green);}
+.mc-item.c-blue .mc-num{color:var(--blue);}
+.mc-item.c-red .mc-num{color:var(--red);}
+
+.how{max-width:720px;width:100%;margin-top:1.5rem;background:rgba(255,255,255,.025);border:1px solid var(--border);padding:1.4rem 1.75rem;}
+.how-title{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;}
+.how-steps{display:flex;flex-direction:column;gap:.6rem;}
+.how-step{display:flex;align-items:flex-start;gap:.85rem;font-size:.82rem;color:rgba(245,240,232,.6);line-height:1.6;}
+.how-num{width:22px;height:22px;border-radius:50%;background:rgba(184,146,42,.12);border:1px solid rgba(184,146,42,.25);color:var(--gold);font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem;}
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+footer{margin-top:2rem;font-size:.65rem;color:rgba(245,240,232,.15);letter-spacing:.08em;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="logo">Soul <span>Healing</span></div>
+<div class="tagline">Command Center · Real-Time Sync</div>
+
+<div class="cards">
+  <a class="card" href="soul-healing-client.html" target="_blank" id="card-client">
+    <div class="card-icon">🌿</div>
+    <div class="card-title">Client Website</div>
+    <div class="card-desc">Public-facing site — services, bookings, chat widget, client portal.</div>
+    <div class="card-status"><span class="status-dot" id="client-dot"></span><span id="client-status-text" style="color:var(--muted)">Not opened yet</span></div>
+    <div class="card-btn">Open Client Site ↗</div>
+  </a>
+
+  <a class="card admin" href="soul-healing-admin.html" target="_blank" id="card-admin">
+    <div class="card-icon">⚙️</div>
+    <div class="card-title">Admin Panel</div>
+    <div class="card-desc">Back-office dashboard — messages, bookings, replies, scheduling, payments.</div>
+    <div class="card-status"><span class="status-dot" id="admin-dot"></span><span id="admin-status-text" style="color:var(--muted)">Not opened yet</span></div>
+    <div class="card-btn">Open Admin Panel ↗</div>
+  </a>
+</div>
+
+<!-- Sync status -->
+<div class="sync-banner" id="sync-banner">
+  <div class="sync-dot-wrap"><div class="sync-live" id="sync-indicator"></div></div>
+  <div class="sync-text">
+    <div class="sync-title" id="sync-title">Monitoring shared storage…</div>
+    <div class="sync-sub" id="sync-sub">Open both tabs in the same browser for real-time sync to activate.</div>
+  </div>
+</div>
+
+<!-- Live counters -->
+<div class="msg-counter" id="msg-counter">
+  <div class="mc-item c-gold"><div class="mc-num" id="cnt-total">0</div><div class="mc-lbl">Total</div></div>
+  <div class="mc-item c-red"><div class="mc-num" id="cnt-unread">0</div><div class="mc-lbl">Unread</div></div>
+  <div class="mc-item c-blue"><div class="mc-num" id="cnt-bookings">0</div><div class="mc-lbl">Bookings</div></div>
+  <div class="mc-item c-green"><div class="mc-num" id="cnt-contacts">0</div><div class="mc-lbl">Contacts</div></div>
+</div>
+
+<div class="how">
+  <div class="how-title">How the connection works</div>
+  <div class="how-steps">
+    <div class="how-step"><div class="how-num">1</div>Open the <strong style="color:var(--cream)">Client Site</strong> in one tab and the <strong style="color:var(--cream)">Admin Panel</strong> in another — both must be in the same browser.</div>
+    <div class="how-step"><div class="how-num">2</div>Both tabs share a <strong style="color:var(--cream)">live sync channel</strong> — data flows instantly between client and admin in real time, with no server required.</div>
+    <div class="how-step"><div class="how-num">3</div>When a client submits a form, books a session, or chats, data is written to localStorage and broadcast instantly to the admin tab — no server required.</div>
+    <div class="how-step"><div class="how-num">4</div>The admin can reply to messages, assign time slots, and update payment details — all changes appear on the client side in real time.</div>
+    <div class="how-step"><div class="how-num">5</div><strong style="color:var(--gold)">Important:</strong> All three files must be opened from the <em>same folder</em> or served from the same local server for storage to be shared.</div>
+  </div>
+</div>
+
+<footer>Soul Healing · All rights reserved · v2.0</footer>
+
+<script>
+// BroadcastChannel to detect when other tabs open/ping
+const _bc = (() => { try { return new BroadcastChannel('soul_healing_sync'); } catch(e){ return null; } })();
+
+let clientOpen = false, adminOpen = false;
+
+// Ping other tabs every 3s to check if they're alive
+function pingTabs(){
+  if(_bc) _bc.postMessage({ key: '__launcher_ping__', from: 'launcher' });
+}
+
+if(_bc) _bc.addEventListener('message', (e) => {
+  if(!e.data) return;
+  const { key } = e.data;
+
+  // Tab announcing itself
+  if(key === '__tab_hello__'){
+    const { role } = e.data;
+    if(role === 'client') setClientOpen(true);
+    if(role === 'admin')  setAdminOpen(true);
+  }
+  // Tab closing / pong response
+  if(key === '__tab_bye__'){
+    const { role } = e.data;
+    if(role === 'client') setClientOpen(false);
+    if(role === 'admin')  setAdminOpen(false);
+  }
+  // Any data change — refresh counters
+  if(key === 'admin_messages') refreshCounters();
+});
+
+function setClientOpen(open){
+  clientOpen = open;
+  const dot = document.getElementById('client-dot');
+  const txt = document.getElementById('client-status-text');
+  if(open){ dot.className='status-dot live'; txt.textContent='Open & syncing'; txt.style.color='var(--green)'; }
+  else     { dot.className='status-dot'; txt.textContent='Not opened yet'; txt.style.color='var(--muted)'; }
+  updateSyncBanner();
+}
+
+function setAdminOpen(open){
+  adminOpen = open;
+  const dot = document.getElementById('admin-dot');
+  const txt = document.getElementById('admin-status-text');
+  if(open){ dot.className='status-dot live'; txt.textContent='Open & syncing'; txt.style.color='var(--green)'; }
+  else     { dot.className='status-dot'; txt.textContent='Not opened yet'; txt.style.color='var(--muted)'; }
+  updateSyncBanner();
+}
+
+function updateSyncBanner(){
+  const banner    = document.getElementById('sync-banner');
+  const indicator = document.getElementById('sync-indicator');
+  const title     = document.getElementById('sync-title');
+  const sub       = document.getElementById('sync-sub');
+
+  if(clientOpen && adminOpen){
+    banner.classList.remove('warn');
+    indicator.className = 'sync-live';
+    title.textContent = '✓ Both tabs open — real-time sync is active';
+    sub.textContent   = 'Data flows instantly between client and admin via BroadcastChannel.';
+    title.style.color = 'var(--green)';
+  } else if(clientOpen || adminOpen){
+    banner.classList.add('warn');
+    indicator.className = 'sync-warn';
+    title.textContent = `${clientOpen?'Client':'Admin'} tab is open — waiting for the other tab`;
+    sub.textContent   = `Open the ${clientOpen?'Admin Panel':'Client Site'} in another tab to enable live sync.`;
+    title.style.color = 'var(--gold-l)';
+  } else {
+    banner.classList.remove('warn');
+    indicator.className = 'sync-live';
+    title.style.color = 'var(--cream)';
+    title.textContent = 'Monitoring shared storage…';
+    sub.textContent   = 'Open both tabs in the same browser for real-time sync to activate.';
+  }
+}
+
+function refreshCounters(){
+  try {
+    const raw = localStorage.getItem('sh_admin_messages');
+    const msgs = raw ? JSON.parse(raw) : [];
+    document.getElementById('cnt-total').textContent    = msgs.length;
+    document.getElementById('cnt-unread').textContent   = msgs.filter(m=>!m.read).length;
+    document.getElementById('cnt-bookings').textContent = msgs.filter(m=>m.type==='booking').length;
+    document.getElementById('cnt-contacts').textContent = msgs.filter(m=>m.type==='contact').length;
+  } catch(e){
+    ['cnt-total','cnt-unread','cnt-bookings','cnt-contacts'].forEach(id=>document.getElementById(id).textContent='0');
+  }
+}
+
+// Announce launcher is alive, ask other tabs to say hello
+function announceLauncher(){
+  if(_bc) _bc.postMessage({ key: '__launcher_ping__', from: 'launcher' });
+}
+
+// Ping every 5s to refresh tab open state
+setInterval(announceLauncher, 5000);
+setInterval(refreshCounters, 3000);
+
+// Initial load
+refreshCounters();
+announceLauncher();
+
+// Listen for storage changes from other windows (fallback for browsers that don't support BroadcastChannel well)
+window.addEventListener('storage', (e) => {
+  if(e.key === 'sh_admin_messages') refreshCounters();
+});
+</script>
+</body>
+</html>

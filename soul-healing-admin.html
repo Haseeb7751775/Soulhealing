@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Soul Healing — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d0b10;--surface:#13101a;--card:#1a1520;--border:rgba(184,146,42,.18);
+  --gold:#b8922a;--gold-l:#e8d5a3;--cream:#f5f0e8;--muted:rgba(245,240,232,.38);
+  --green:#4caf74;--red:#e05252;--blue:#5b9bd5;--purple:#9b6dce;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;gap:1rem;padding:.9rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.topbar-logo{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:600;color:var(--cream);}
+.topbar-logo span{color:var(--gold);}
+.topbar-badge{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;background:rgba(184,146,42,.12);color:var(--gold);border:1px solid rgba(184,146,42,.25);padding:.22rem .65rem;border-radius:2px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.75rem;}
+.unread-pill{background:var(--red);color:#fff;font-size:.65rem;font-weight:700;padding:.22rem .6rem;border-radius:99px;display:none;}
+.unread-pill.show{display:inline-block;}
+.btn-refresh{background:rgba(184,146,42,.1);border:1px solid rgba(184,146,42,.25);color:var(--gold);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;}
+.btn-refresh:hover{background:rgba(184,146,42,.22);}
+.btn-clear{background:rgba(224,82,82,.1);border:1px solid rgba(224,82,82,.2);color:var(--red);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;}
+.btn-clear:hover{background:rgba(224,82,82,.22);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.5s ease-in-out infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.live-label{font-size:.65rem;color:var(--green);}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:220px;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.sb-section{padding:.9rem 1rem .4rem;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(245,240,232,.2);}
+.sb-item{display:flex;align-items:center;gap:.65rem;padding:.6rem 1rem;cursor:pointer;font-size:.82rem;color:var(--muted);transition:background .15s,color .15s;border-left:2px solid transparent;}
+.sb-item:hover{background:rgba(184,146,42,.05);color:var(--cream);}
+.sb-item.active{background:rgba(184,146,42,.08);color:var(--gold);border-left-color:var(--gold);}
+.sb-icon{font-size:.9rem;width:18px;text-align:center;}
+.sb-count{margin-left:auto;background:rgba(224,82,82,.85);color:#fff;font-size:.58rem;font-weight:700;padding:.15rem .45rem;border-radius:99px;display:none;}
+.sb-count.show{display:inline-block;}
+.sb-spacer{flex:1;}
+.sb-footer{padding:.9rem 1rem;font-size:.65rem;color:rgba(245,240,232,.15);border-top:1px solid var(--border);}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:1.5rem;display:none;}
+.main.active{display:block;}
+.main::-webkit-scrollbar{width:4px;}
+.main::-webkit-scrollbar-thumb{background:rgba(184,146,42,.15);}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--card);border:1px solid var(--border);padding:1rem 1.1rem;transition:border-color .2s,background .2s;}
+.stat-card:hover{background:#1f1a2a;border-color:rgba(184,146,42,.3);}
+.stat-card-lbl{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;}
+.stat-card-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;line-height:1;}
+.stat-card-sub{font-size:.65rem;color:var(--muted);margin-top:.3rem;}
+.stat-card.c-gold .stat-card-num{color:var(--gold);}
+.stat-card.c-green .stat-card-num{color:var(--green);}
+.stat-card.c-blue .stat-card-num{color:var(--blue);}
+.stat-card.c-red .stat-card-num{color:var(--red);}
+.stat-card.c-purple .stat-card-num{color:var(--purple);}
+
+/* FILTERS */
+.filters{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.filter-btn{background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.14);color:var(--muted);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border-radius:2px;}
+.filter-btn.on{background:rgba(184,146,42,.14);border-color:rgba(184,146,42,.5);color:var(--gold);}
+.filter-btn:hover:not(.on){border-color:rgba(184,146,42,.3);color:var(--cream);}
+.search-box{margin-left:auto;background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.14);color:var(--cream);padding:.35rem .85rem;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none;border-radius:2px;width:190px;}
+.search-box:focus{border-color:rgba(184,146,42,.45);}
+.search-box::placeholder{color:rgba(245,240,232,.2);}
+
+/* TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--border);overflow:hidden;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);white-space:nowrap;}
+.tbl td{font-size:.8rem;padding:.7rem 1rem;border-bottom:1px solid rgba(184,146,42,.06);vertical-align:top;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(184,146,42,.03);}
+.tbl tr.unread td{background:rgba(184,146,42,.025);}
+.tbl tr.unread td:first-child{border-left:2px solid var(--gold);}
+.type-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.22rem .6rem;border-radius:2px;font-weight:500;}
+.type-contact{background:rgba(91,155,213,.12);color:var(--blue);border:1px solid rgba(91,155,213,.2);}
+.type-booking{background:rgba(184,146,42,.12);color:var(--gold);border:1px solid rgba(184,146,42,.22);}
+.type-chat{background:rgba(155,109,206,.12);color:var(--purple);border:1px solid rgba(155,109,206,.2);}
+.type-signup{background:rgba(76,175,116,.12);color:var(--green);border:1px solid rgba(76,175,116,.2);}
+.type-psychology{background:rgba(155,109,206,.12);color:var(--purple);border:1px solid rgba(155,109,206,.2);}
+.tbl-name{font-weight:500;color:var(--cream);}
+.tbl-sub{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.tbl-service{font-size:.75rem;color:var(--gold-l);}
+.tbl-time{font-size:.7rem;color:var(--muted);white-space:nowrap;}
+.tbl-amount{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--green);}
+.tbl-actions{display:flex;gap:.35rem;flex-wrap:wrap;}
+.btn-view{background:rgba(184,146,42,.1);border:1px solid rgba(184,146,42,.2);color:var(--gold);font-size:.65rem;padding:.28rem .65rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;transition:background .15s;}
+.btn-view:hover{background:rgba(184,146,42,.25);}
+.btn-reply{background:rgba(91,155,213,.1);border:1px solid rgba(91,155,213,.2);color:var(--blue);font-size:.65rem;padding:.28rem .65rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;transition:background .15s;}
+.btn-reply:hover{background:rgba(91,155,213,.25);}
+.btn-del{background:rgba(224,82,82,.08);border:1px solid rgba(224,82,82,.18);color:var(--red);font-size:.65rem;padding:.28rem .65rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;transition:background .15s;}
+.btn-del:hover{background:rgba(224,82,82,.2);}
+.tag-badge{display:inline-block;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .5rem;border-radius:2px;margin:1px;cursor:default;}
+.tag-vip{background:rgba(184,146,42,.2);color:var(--gold);border:1px solid rgba(184,146,42,.3);}
+.tag-urgent{background:rgba(224,82,82,.15);color:var(--red);border:1px solid rgba(224,82,82,.25);}
+.tag-followup{background:rgba(91,155,213,.15);color:var(--blue);border:1px solid rgba(91,155,213,.25);}
+.tag-paid{background:rgba(76,175,116,.15);color:var(--green);border:1px solid rgba(76,175,116,.25);}
+.tag-new{background:rgba(155,109,206,.15);color:var(--purple);border:1px solid rgba(155,109,206,.25);}
+.tag-closed{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.1);}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);}
+.empty-icon{font-size:2.5rem;margin-bottom:.75rem;opacity:.35;}
+.empty-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;margin-bottom:.4rem;color:rgba(245,240,232,.4);}
+.empty-sub{font-size:.8rem;line-height:1.7;}
+
+/* DETAIL OVERLAY */
+#detail-overlay{position:fixed;inset:0;background:rgba(10,8,13,.88);z-index:200;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .25s;}
+#detail-overlay.active{opacity:1;pointer-events:all;}
+#detail-panel{background:var(--card);border:1px solid var(--border);width:100%;max-width:580px;max-height:90vh;overflow-y:auto;transform:translateY(16px);transition:transform .3s;}
+#detail-overlay.active #detail-panel{transform:none;}
+.dp-header{padding:1.1rem 1.4rem;background:rgba(255,255,255,.025);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;}
+.dp-icon{font-size:1.1rem;color:var(--gold);}
+.dp-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--cream);font-weight:400;}
+.dp-close{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;transition:color .2s;}
+.dp-close:hover{color:var(--cream);}
+.dp-body{padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:.6rem;}
+.dp-row{display:flex;gap:.5rem;}
+.dp-lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex-shrink:0;width:100px;padding-top:1px;}
+.dp-val{font-size:.85rem;color:var(--cream);word-break:break-word;}
+.dp-val.gold{color:var(--gold);}
+.dp-val.green{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--green);}
+.dp-sep{height:1px;background:var(--border);margin:.3rem 0;}
+.dp-chat{background:rgba(255,255,255,.03);border:1px solid rgba(184,146,42,.1);padding:.85rem;font-size:.8rem;line-height:1.8;color:rgba(245,240,232,.65);white-space:pre-wrap;max-height:200px;overflow-y:auto;border-radius:2px;}
+
+/* REPLY BOX */
+.reply-box{background:rgba(255,255,255,.03);border:1px solid rgba(91,155,213,.2);border-radius:4px;overflow:hidden;margin-top:.5rem;}
+.reply-box-header{padding:.5rem .85rem;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);border-bottom:1px solid rgba(91,155,213,.12);background:rgba(91,155,213,.05);}
+.reply-textarea{width:100%;background:transparent;border:none;color:var(--cream);padding:.75rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;line-height:1.6;resize:vertical;min-height:80px;outline:none;}
+.reply-textarea::placeholder{color:rgba(245,240,232,.2);}
+.reply-actions{display:flex;gap:.5rem;padding:.5rem .85rem;border-top:1px solid rgba(91,155,213,.1);}
+.btn-send-reply{background:rgba(91,155,213,.15);border:1px solid rgba(91,155,213,.3);color:var(--blue);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;border-radius:2px;}
+.btn-send-reply:hover{background:rgba(91,155,213,.3);}
+.btn-cancel-reply{background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--muted);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;}
+
+/* TAGS EDIT */
+.tags-edit-wrap{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;margin-top:.25rem;}
+.tag-toggle{font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;cursor:pointer;border:1px dashed rgba(255,255,255,.15);color:rgba(245,240,232,.3);background:transparent;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.tag-toggle.active-vip{background:rgba(184,146,42,.2);color:var(--gold);border-color:rgba(184,146,42,.4);}
+.tag-toggle.active-urgent{background:rgba(224,82,82,.15);color:var(--red);border-color:rgba(224,82,82,.3);}
+.tag-toggle.active-followup{background:rgba(91,155,213,.15);color:var(--blue);border-color:rgba(91,155,213,.3);}
+.tag-toggle.active-paid{background:rgba(76,175,116,.15);color:var(--green);border-color:rgba(76,175,116,.3);}
+.tag-toggle.active-new{background:rgba(155,109,206,.15);color:var(--purple);border-color:rgba(155,109,206,.3);}
+.tag-toggle.active-closed{background:rgba(255,255,255,.08);color:var(--muted);border-color:rgba(255,255,255,.15);}
+
+/* ============================================================
+   CLIENTS TAB
+   ============================================================ */
+.clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1.5rem;}
+.client-card{background:var(--card);border:1px solid var(--border);padding:1.25rem;transition:border-color .2s;}
+.client-card:hover{border-color:rgba(184,146,42,.35);}
+.client-card-top{display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem;}
+.client-avatar{width:40px;height:40px;border-radius:50%;background:rgba(184,146,42,.1);border:1px solid rgba(184,146,42,.25);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--gold);flex-shrink:0;}
+.client-name{font-weight:500;font-size:.88rem;color:var(--cream);}
+.client-email{font-size:.72rem;color:var(--muted);margin-top:1px;}
+.client-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.75rem;}
+.client-stat{background:rgba(255,255,255,.025);border:1px solid rgba(184,146,42,.07);padding:.4rem .6rem;border-radius:2px;text-align:center;}
+.client-stat-num{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--gold);}
+.client-stat-lbl{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:1px;}
+.client-tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.75rem;}
+.client-actions{display:flex;gap:.35rem;}
+.client-last{font-size:.68rem;color:var(--muted);margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(184,146,42,.07);}
+
+/* ============================================================
+   ACCOUNT MANAGEMENT TAB
+   ============================================================ */
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.account-card{background:var(--card);border:1px solid var(--border);padding:1.4rem;}
+.account-card-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:var(--cream);margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);}
+.field-group{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem;}
+.field-group label{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.field-group input,.field-group select,.field-group textarea{background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.14);color:var(--cream);padding:.55rem .85rem;font-size:.82rem;font-family:'DM Sans',sans-serif;outline:none;border-radius:2px;transition:border-color .2s;}
+.field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:rgba(184,146,42,.45);}
+.field-group input::placeholder,.field-group textarea::placeholder{color:rgba(245,240,232,.2);}
+.field-group select option{background:var(--card);color:var(--cream);}
+.btn-save{background:rgba(184,146,42,.15);border:1px solid rgba(184,146,42,.3);color:var(--gold);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.5rem 1.1rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;border-radius:2px;}
+.btn-save:hover{background:rgba(184,146,42,.28);}
+.account-tags-wrap{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;}
+.acc-tag-item{display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.14);padding:.3rem .7rem;border-radius:2px;font-size:.72rem;color:var(--cream);}
+.acc-tag-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:.8rem;padding:0;line-height:1;}
+.acc-tag-add{display:flex;gap:.5rem;margin-top:.3rem;}
+.acc-tag-input{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.14);color:var(--cream);padding:.4rem .75rem;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none;border-radius:2px;}
+.acc-tag-input::placeholder{color:rgba(245,240,232,.2);}
+.acc-tag-input:focus{border-color:rgba(184,146,42,.45);}
+.acc-tag-btn{background:rgba(184,146,42,.12);border:1px solid rgba(184,146,42,.25);color:var(--gold);font-size:.72rem;padding:.4rem .8rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;}
+.acc-color-swatches{display:flex;gap:.5rem;flex-wrap:wrap;}
+.swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s;}
+.swatch:hover{transform:scale(1.15);}
+.swatch.active{border-color:#fff;}
+
+/* CHAT REPLIES TAB */
+.chat-list{display:flex;flex-direction:column;gap:.75rem;margin-top:1.5rem;}
+.chat-item{background:var(--card);border:1px solid var(--border);overflow:hidden;}
+.chat-item-header{display:flex;align-items:center;gap:.75rem;padding:1rem 1.2rem;cursor:pointer;transition:background .15s;}
+.chat-item-header:hover{background:rgba(184,146,42,.04);}
+.chat-item-avatar{width:36px;height:36px;border-radius:50%;background:rgba(155,109,206,.12);border:1px solid rgba(155,109,206,.25);display:flex;align-items:center;justify-content:center;color:var(--purple);font-size:.85rem;flex-shrink:0;}
+.chat-item-info{flex:1;min-width:0;}
+.chat-item-name{font-size:.85rem;font-weight:500;color:var(--cream);}
+.chat-item-preview{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.chat-item-meta{display:flex;flex-direction:column;align-items:flex-end;gap:.25rem;flex-shrink:0;}
+.chat-item-time{font-size:.65rem;color:var(--muted);}
+.chat-expand{font-size:.7rem;color:var(--muted);transform:rotate(0deg);transition:transform .2s;}
+.chat-item.expanded .chat-expand{transform:rotate(180deg);}
+.chat-body{display:none;padding:1rem 1.2rem;border-top:1px solid var(--border);background:rgba(255,255,255,.015);}
+.chat-item.expanded .chat-body{display:block;}
+.chat-thread-wrap{background:rgba(255,255,255,.025);border:1px solid rgba(184,146,42,.08);padding:.85rem;font-size:.8rem;line-height:1.9;color:rgba(245,240,232,.6);white-space:pre-wrap;max-height:240px;overflow-y:auto;border-radius:2px;margin-bottom:.85rem;}
+.chat-reply-row{display:flex;gap:.6rem;align-items:flex-end;}
+.chat-reply-input{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(155,109,206,.2);color:var(--cream);padding:.55rem .85rem;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;border-radius:2px;transition:border-color .2s;}
+.chat-reply-input:focus{border-color:rgba(155,109,206,.45);}
+.chat-reply-input::placeholder{color:rgba(245,240,232,.2);}
+.btn-chat-reply{background:rgba(155,109,206,.15);border:1px solid rgba(155,109,206,.3);color:var(--purple);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:.55rem 1rem;cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:2px;white-space:nowrap;transition:background .15s;}
+.btn-chat-reply:hover{background:rgba(155,109,206,.3);}
+.admin-reply-bubble{background:rgba(91,155,213,.08);border:1px solid rgba(91,155,213,.15);border-radius:4px 4px 0 4px;padding:.6rem .85rem;font-size:.8rem;color:rgba(245,240,232,.75);line-height:1.6;margin-bottom:.5rem;}
+.admin-reply-label{font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:.25rem;}
+
+/* PAGE TITLE */
+.page-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:var(--cream);margin-bottom:1.5rem;}
+.page-title span{color:var(--gold);}
+
+/* TOAST */
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;background:var(--card);border:1px solid rgba(184,146,42,.28);color:var(--cream);font-size:.8rem;padding:.75rem 1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.55);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;border-radius:2px;display:flex;align-items:center;gap:.5rem;}
+#toast.show{opacity:1;transform:none;}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+/* SECTION CARD */
+.section-card{background:var(--card);border:1px solid var(--border);padding:1.2rem 1.4rem;margin-bottom:1rem;}
+.section-card-title{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem;}
+
+@media(max-width:900px){
+  .account-grid{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:700px){
+  .sidebar{display:none;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .tbl th:nth-child(4),.tbl td:nth-child(4),.tbl th:nth-child(5),.tbl td:nth-child(5){display:none;}
+  .search-box{width:130px;}
+  .account-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<style>
+.conn-banner{background:rgba(91,155,213,.08);border-bottom:1px solid rgba(91,155,213,.2);padding:.55rem 1.5rem;font-size:.72rem;color:rgba(91,155,213,.8);display:flex;align-items:center;gap:.5rem;}
+.conn-banner strong{color:#5b9bd5;}
+.conn-dot-live{width:6px;height:6px;border-radius:50%;background:#4caf74;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
+</style>
+<div class="topbar">
+  <div class="topbar-logo">Soul <span>Healing</span></div>
+  <div class="topbar-badge">Admin Panel</div>
+  <div class="topbar-right">
+    <span class="live-dot"></span><span class="live-label">Live</span>
+    <span class="unread-pill" id="unread-pill">0 new</span>
+    <button class="btn-refresh" onclick="loadMessages()">↻ Refresh</button>
+    <button class="btn-clear" onclick="clearAll()">✕ Clear All</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sb-section">Inbox</div>
+    <div class="sb-item active" id="nav-all" onclick="showTab('messages','all',this)"><span class="sb-icon">◈</span>All Messages<span class="sb-count show" id="sb-all">0</span></div>
+    <div class="sb-item" id="nav-contact" onclick="showTab('messages','contact',this)"><span class="sb-icon">✉</span>Contact Forms<span class="sb-count" id="sb-contact">0</span></div>
+    <div class="sb-item" id="nav-booking" onclick="showTab('messages','booking',this)"><span class="sb-icon">✦</span>Bookings<span class="sb-count" id="sb-booking">0</span></div>
+    <div class="sb-item" id="nav-chat" onclick="showTab('messages','chat',this)"><span class="sb-icon">☽</span>Chat Threads<span class="sb-count" id="sb-chat">0</span></div>
+    <div class="sb-item" id="nav-psychology" onclick="showTab('messages','psychology',this)"><span class="sb-icon">🧠</span>Psychologist<span class="sb-count" id="sb-psychology">0</span></div>
+    <div class="sb-item" id="nav-unread" onclick="showTab('messages','unread',this)"><span class="sb-icon">●</span>Unread<span class="sb-count" id="sb-unread">0</span></div>
+
+    <div class="sb-section">Management</div>
+    <div class="sb-item" id="nav-clients" onclick="showTab('clients','',this)"><span class="sb-icon">👤</span>Clients</div>
+    <div class="sb-item" id="nav-chats" onclick="showTab('chats','',this)"><span class="sb-icon">💬</span>Manage Chats<span class="sb-count" id="sb-chatreply">0</span></div>
+    <div class="sb-item" id="nav-schedule" onclick="showTab('schedule','',this)"><span class="sb-icon">📅</span>Schedule Manager</div>
+    <div class="sb-item" id="nav-portalmsg" onclick="showTab('portalmsg','',this)"><span class="sb-icon">🔐</span>Client Portal<span class="sb-count" id="sb-portalmsg">0</span></div>
+    <div class="sb-item" id="nav-psychologist" onclick="showTab('psychologist','',this)"><span class="sb-icon">🧠</span>Psychologist<span class="sb-count" id="sb-psych-tab">0</span></div>
+    <div class="sb-item" id="nav-account" onclick="showTab('account','',this)"><span class="sb-icon">⚙</span>Account</div>
+
+    <div class="sb-spacer"></div>
+    <div class="sb-footer">Soul Healing Admin · v2.0</div>
+  </div>
+
+  <!-- MESSAGES TAB -->
+  <div class="main active" id="tab-messages">
+    <div class="stats-row">
+      <div class="stat-card c-gold"><div class="stat-card-lbl">Total Messages</div><div class="stat-card-num" id="stat-total">0</div><div class="stat-card-sub">All time</div></div>
+      <div class="stat-card c-blue"><div class="stat-card-lbl">Contact Forms</div><div class="stat-card-num" id="stat-contact">0</div><div class="stat-card-sub">Form submissions</div></div>
+      <div class="stat-card c-green"><div class="stat-card-lbl">Bookings</div><div class="stat-card-num" id="stat-booking">0</div><div class="stat-card-sub">Session requests</div></div>
+      <div class="stat-card c-red"><div class="stat-card-lbl">Unread</div><div class="stat-card-num" id="stat-unread">0</div><div class="stat-card-sub">Needs attention</div></div>
+    </div>
+    <div class="filters">
+      <button class="filter-btn on" id="fb-all" onclick="setFilterBtn('all',this)">All</button>
+      <button class="filter-btn" id="fb-contact" onclick="setFilterBtn('contact',this)">Contact</button>
+      <button class="filter-btn" id="fb-booking" onclick="setFilterBtn('booking',this)">Booking</button>
+      <button class="filter-btn" id="fb-chat" onclick="setFilterBtn('chat',this)">Chat</button>
+      <button class="filter-btn" id="fb-psychology" onclick="setFilterBtn('psychology',this)">🧠 Psychologist</button>
+      <button class="filter-btn" id="fb-signup" onclick="setFilterBtn('signup',this)">Sign Ups</button>
+      <button class="filter-btn" id="fb-unread" onclick="setFilterBtn('unread',this)">Unread</button>
+      <input class="search-box" id="search-box" placeholder="Search name, email…"/>
+    </div>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>From</th>
+            <th>Service / Subject</th>
+            <th>Tags</th>
+            <th>Amount</th>
+            <th>Received</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CLIENTS TAB -->
+  <div class="main" id="tab-clients">
+    <div class="page-title">Client <span>Directory</span></div>
+    <div class="filters">
+      <input class="search-box" id="client-search" placeholder="Search clients…" style="margin-left:0;width:220px;" oninput="renderClients()"/>
+    </div>
+    <div class="clients-grid" id="clients-grid"></div>
+  </div>
+
+  <!-- CHATS MANAGEMENT TAB -->
+  <div class="main" id="tab-chats">
+    <div class="page-title">Chat <span>Threads</span></div>
+    <div class="chat-list" id="chat-list"></div>
+  </div>
+
+  <!-- ACCOUNT TAB -->
+  <div class="main" id="tab-account">
+    <div class="page-title">Account <span>Settings</span></div>
+    <div class="account-grid">
+
+      <!-- Profile -->
+      <div class="account-card">
+        <div class="account-card-title">Business Profile</div>
+        <div class="field-group">
+          <label>Business Name</label>
+          <input type="text" id="acc-biz-name" placeholder="Soul Healing"/>
+        </div>
+        <div class="field-group">
+          <label>Admin Email</label>
+          <input type="email" id="acc-email" placeholder="admin@soulhealing.com"/>
+        </div>
+        <div class="field-group">
+          <label>Phone</label>
+          <input type="tel" id="acc-phone" placeholder="+1 (800) 765-4321"/>
+        </div>
+        <div class="field-group">
+          <label>Hours</label>
+          <input type="text" id="acc-hours" placeholder="Mon–Sat, 9am–7pm EST"/>
+        </div>
+        <button class="btn-save" onclick="saveProfile()">Save Profile</button>
+      </div>
+
+      <!-- Tag Management -->
+      <div class="account-card">
+        <div class="account-card-title">Manage Client Tags</div>
+        <div class="section-card-title" style="margin-bottom:.5rem;">Active Tags</div>
+        <div class="account-tags-wrap" id="acc-tags-wrap"></div>
+        <div class="acc-tag-add">
+          <input class="acc-tag-input" id="new-tag-input" placeholder="New tag name…" onkeydown="if(event.key==='Enter')addCustomTag()"/>
+          <select id="new-tag-color" style="background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.14);color:var(--cream);padding:.4rem .5rem;font-size:.75rem;font-family:'DM Sans',sans-serif;outline:none;border-radius:2px;">
+            <option value="gold">Gold</option>
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="purple">Purple</option>
+            <option value="muted">Grey</option>
+          </select>
+          <button class="acc-tag-btn" onclick="addCustomTag()">+ Add</button>
+        </div>
+        <div class="dp-sep" style="margin-top:1rem;"></div>
+        <div class="section-card-title" style="margin-top:.75rem;margin-bottom:.5rem;">Preset Tags</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.35rem;">
+          <span class="tag-badge tag-vip">⭐ VIP</span>
+          <span class="tag-badge tag-urgent">⚠ Urgent</span>
+          <span class="tag-badge tag-followup">↺ Follow Up</span>
+          <span class="tag-badge tag-paid">✓ Paid</span>
+          <span class="tag-badge tag-new">✦ New</span>
+          <span class="tag-badge tag-closed">✕ Closed</span>
+        </div>
+        <button class="btn-save" style="margin-top:1rem;" onclick="saveTags()">Save Tags</button>
+      </div>
+
+      <!-- Notification Settings -->
+      <div class="account-card">
+        <div class="account-card-title">Notification Settings</div>
+        <div class="field-group">
+          <label>Notification Email</label>
+          <input type="email" id="acc-notif-email" placeholder="alerts@soulhealing.com"/>
+        </div>
+        <div class="field-group">
+          <label>Auto-refresh Interval</label>
+          <select id="acc-refresh">
+            <option value="15000">Every 15 seconds</option>
+            <option value="30000">Every 30 seconds</option>
+            <option value="60000">Every minute</option>
+            <option value="300000">Every 5 minutes</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Default Filter</label>
+          <select id="acc-default-filter">
+            <option value="all">All Messages</option>
+            <option value="unread">Unread Only</option>
+            <option value="booking">Bookings</option>
+            <option value="contact">Contact Forms</option>
+          </select>
+        </div>
+        <button class="btn-save" onclick="saveNotifSettings()">Save Settings</button>
+      </div>
+
+      <!-- Chat Widget Settings -->
+      <div class="account-card">
+        <div class="account-card-title">Chat Widget Settings</div>
+        <div class="field-group">
+          <label>Widget Greeting</label>
+          <textarea id="acc-greeting" rows="3" placeholder="Welcome to Soul Healing. 🙏 I'm here to listen and guide you."></textarea>
+        </div>
+        <div class="field-group">
+          <label>Quick Reply Buttons (one per line)</label>
+          <textarea id="acc-quick-replies" rows="4" placeholder="What services do you offer?&#10;How does remote healing work?&#10;I think I have black magic on me&#10;What are your prices?"></textarea>
+        </div>
+        <div class="field-group">
+          <label>Auto-response Delay (seconds)</label>
+          <input type="number" id="acc-reply-delay" min="1" max="10" value="2" placeholder="2"/>
+        </div>
+        <button class="btn-save" onclick="saveChatSettings()">Save Chat Settings</button>
+      </div>
+
+      <!-- Payment Details -->
+      <div class="account-card" style="grid-column:1/-1;">
+        <div class="account-card-title">💸 Payment Details — What Clients See</div>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1.25rem;">Set your personal payment handles below. These are shown to clients during the booking flow when they choose a payment method. Leave a field blank to hide that payment option from clients.</p>
+
+        <div class="account-grid" style="gap:1.5rem;">
+          <div>
+            <div class="section-card-title" style="margin-bottom:.85rem;">💳 CashApp</div>
+            <div class="field-group">
+              <label>Your $Cashtag</label>
+              <input type="text" id="pay-cashapp" placeholder="e.g. $YourName"/>
+            </div>
+            <div class="section-card-title" style="margin-bottom:.85rem;margin-top:1rem;">🟢 Chime</div>
+            <div class="field-group">
+              <label>Chime Email or Phone</label>
+              <input type="text" id="pay-chime" placeholder="e.g. you@email.com or +1 555 000 0000"/>
+            </div>
+          </div>
+          <div>
+            <div class="section-card-title" style="margin-bottom:.85rem;">💙 Zelle</div>
+            <div class="field-group">
+              <label>Zelle Email or Phone</label>
+              <input type="text" id="pay-zelle" placeholder="e.g. you@email.com or +1 555 000 0000"/>
+            </div>
+            <div class="section-card-title" style="margin-bottom:.85rem;margin-top:1rem;">🅿 PayPal</div>
+            <div class="field-group">
+              <label>PayPal Email or Link</label>
+              <input type="text" id="pay-paypal" placeholder="e.g. paypal.me/YourName"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top:1rem;">
+          <label>🏦 Bank Transfer Note</label>
+          <textarea id="pay-bank" rows="2" placeholder="e.g. Please email info@you.com after transfer, referencing your booking ID."></textarea>
+        </div>
+        <div class="field-group">
+          <label>💬 General Payment Note (shown to all clients)</label>
+          <textarea id="pay-note" rows="2" placeholder="e.g. Send payment screenshot to info@soulhealing.com to confirm your booking."></textarea>
+        </div>
+        <button class="btn-save" onclick="savePaymentDetails()">Save Payment Details</button>
+        <div id="pay-preview-wrap" style="margin-top:1.25rem;display:none;">
+          <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;">Live Preview — Clients Will See:</div>
+          <div id="pay-preview" style="background:rgba(255,255,255,.03);border:1px solid var(--border);padding:.85rem 1rem;border-radius:2px;font-size:.8rem;line-height:2;color:rgba(245,240,232,.7);"></div>
+        </div>
+      </div>
+
+      <!-- Payment Tag Management -->
+      <div class="account-card" style="grid-column:1/-1;">
+        <div class="account-card-title">💳 Payment Tag Management</div>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1rem;">Auto-tag clients based on payment status. When a booking arrives, the configured tag is applied automatically. Use bulk actions or target a specific client below.</p>
+        <div class="account-grid" style="gap:1.5rem;">
+
+          <!-- Auto-tag setting -->
+          <div>
+            <div class="section-card-title" style="margin-bottom:.6rem;">Auto-tag on Booking Confirm</div>
+            <div class="field-group">
+              <label>Tag Applied Automatically</label>
+              <select id="acc-autopay-tag">
+                <option value="paid">✓ Paid — Mark as paid immediately</option>
+                <option value="followup">↺ Follow Up — Payment pending review</option>
+                <option value="new">✦ New — New client, awaiting payment</option>
+                <option value="none">— None — Don't auto-tag</option>
+              </select>
+            </div>
+            <button class="btn-save" onclick="saveAutoPayTag()">Save Auto-tag Setting</button>
+
+            <div class="dp-sep" style="margin:1.2rem 0;"></div>
+            <div class="section-card-title" style="margin-bottom:.75rem;">Tag Specific Client</div>
+            <div class="field-group">
+              <label>Client Email or Name</label>
+              <input type="text" id="pay-client-id" placeholder="john@email.com or John Smith"/>
+            </div>
+            <div class="field-group">
+              <label>Tag to Apply</label>
+              <select id="pay-tag-select">
+                <option value="paid">✓ Paid</option>
+                <option value="followup">↺ Follow Up</option>
+                <option value="urgent">⚠ Urgent</option>
+                <option value="vip">⭐ VIP</option>
+                <option value="closed">✕ Closed</option>
+              </select>
+            </div>
+            <button class="btn-save" onclick="tagClientByIdentifier()">Apply Tag to Client</button>
+          </div>
+
+          <!-- Bulk tag actions -->
+          <div>
+            <div class="section-card-title" style="margin-bottom:.75rem;">Bulk Tag by Payment Status</div>
+            <div style="display:flex;flex-direction:column;gap:.6rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(76,175,116,.06);border:1px solid rgba(76,175,116,.18);padding:.6rem .9rem;border-radius:2px;">
+                <span style="font-size:.78rem;color:var(--green);">✓ Paid</span>
+                <div style="display:flex;gap:.4rem;">
+                  <button class="btn-view" onclick="bulkTag('booking','paid')">Tag All Bookings</button>
+                  <button class="btn-del" onclick="bulkUntag('paid')">Remove All</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(91,155,213,.06);border:1px solid rgba(91,155,213,.18);padding:.6rem .9rem;border-radius:2px;">
+                <span style="font-size:.78rem;color:var(--blue);">↺ Follow Up</span>
+                <div style="display:flex;gap:.4rem;">
+                  <button class="btn-view" onclick="bulkTag('booking','followup')">Tag All Bookings</button>
+                  <button class="btn-del" onclick="bulkUntag('followup')">Remove All</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.18);padding:.6rem .9rem;border-radius:2px;">
+                <span style="font-size:.78rem;color:var(--red);">⚠ Urgent</span>
+                <div style="display:flex;gap:.4rem;">
+                  <button class="btn-view" onclick="bulkTag('booking','urgent')">Tag All Bookings</button>
+                  <button class="btn-del" onclick="bulkUntag('urgent')">Remove All</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(184,146,42,.06);border:1px solid rgba(184,146,42,.2);padding:.6rem .9rem;border-radius:2px;">
+                <span style="font-size:.78rem;color:var(--gold);">⭐ VIP</span>
+                <div style="display:flex;gap:.4rem;">
+                  <button class="btn-view" onclick="bulkTag('booking','vip')">Tag All Bookings</button>
+                  <button class="btn-del" onclick="bulkUntag('vip')">Remove All</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:.6rem .9rem;border-radius:2px;">
+                <span style="font-size:.78rem;color:var(--muted);">✕ Closed</span>
+                <div style="display:flex;gap:.4rem;">
+                  <button class="btn-view" onclick="bulkTag('booking','closed')">Tag All Bookings</button>
+                  <button class="btn-del" onclick="bulkUntag('closed')">Remove All</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+  <!-- SCHEDULE MANAGER TAB -->
+  <div class="main" id="tab-schedule">
+    <div class="page-title">Schedule <span>Manager</span></div>
+    <div class="account-grid" style="grid-template-columns:1fr 1fr;">
+
+      <!-- Add Time Slot -->
+      <div class="account-card">
+        <div class="account-card-title">Add Available Time Slot</div>
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date" id="slot-date"/>
+        </div>
+        <div class="field-group">
+          <label>Start Time</label>
+          <input type="time" id="slot-time-start"/>
+        </div>
+        <div class="field-group">
+          <label>End Time</label>
+          <input type="time" id="slot-time-end"/>
+        </div>
+        <div class="field-group">
+          <label>Service (optional)</label>
+          <select id="slot-service">
+            <option value="">Any Service</option>
+            <option>Black Magic Removal</option>
+            <option>Spiritual Protection</option>
+            <option>Energy Healing</option>
+            <option>Spiritual Consultation</option>
+            <option>Entity &amp; Jinn Removal</option>
+            <option>Home &amp; Space Cleansing</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Notes (optional)</label>
+          <input type="text" id="slot-notes" placeholder="e.g. Remote only, Limited seats"/>
+        </div>
+        <button class="btn-save" onclick="addTimeSlot()">+ Add Slot</button>
+      </div>
+
+      <!-- Assign Slot to Client -->
+      <div class="account-card">
+        <div class="account-card-title">Assign Slot to Client</div>
+        <div class="field-group">
+          <label>Client Email</label>
+          <input type="email" id="assign-email" placeholder="client@email.com"/>
+        </div>
+        <div class="field-group">
+          <label>Select Slot</label>
+          <select id="assign-slot-select"><option value="">— Load slots first —</option></select>
+        </div>
+        <div class="field-group">
+          <label>Booking Reference (auto or manual)</label>
+          <input type="text" id="assign-ref" placeholder="Auto-generated if blank"/>
+        </div>
+        <div class="field-group">
+          <label>Session Amount (USD)</label>
+          <input type="text" id="assign-amount" placeholder="e.g. 150"/>
+        </div>
+        <div class="field-group">
+          <label>Payment Status</label>
+          <select id="assign-pay-status">
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="partial">Partial</option>
+            <option value="waived">Waived</option>
+          </select>
+        </div>
+        <button class="btn-save" onclick="assignSlotToClient()">Assign &amp; Notify Client</button>
+      </div>
+    </div>
+
+    <!-- Slots Table -->
+    <div class="account-card" style="margin-top:1rem;">
+      <div class="account-card-title">All Time Slots</div>
+      <div class="filters" style="margin-bottom:.75rem;">
+        <button class="filter-btn on" id="sfb-all" onclick="filterSlots('all',this)">All</button>
+        <button class="filter-btn" id="sfb-available" onclick="filterSlots('available',this)">Available</button>
+        <button class="filter-btn" id="sfb-assigned" onclick="filterSlots('assigned',this)">Assigned</button>
+        <button class="filter-btn" id="sfb-past" onclick="filterSlots('past',this)">Past</button>
+      </div>
+      <div id="slots-table-wrap">
+        <div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No slots yet</div><div class="empty-sub">Add your first available time slot above.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENT PORTAL MESSAGES TAB -->
+  <div class="main" id="tab-portalmsg">
+    <div class="page-title">Client Portal <span>Messages</span></div>
+    <div style="margin-bottom:1rem;">
+      <div class="conn-banner" style="margin-bottom:0;border-radius:2px;"><span class="conn-dot-live"></span>Messages sent from the client portal appear here. Reply to communicate with logged-in clients.</div>
+    </div>
+    <div class="chat-list" id="portal-chat-list"></div>
+  </div>
+
+  <!-- PSYCHOLOGIST APPOINTMENTS TAB -->
+  <div class="main" id="tab-psychologist">
+    <div class="page-title">Psychologist <span>Appointments</span></div>
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem;">
+      <div class="stat-card c-purple"><div class="stat-card-lbl">Total Requests</div><div class="stat-card-num" id="psy-stat-total">0</div><div class="stat-card-sub">Psychology consultations</div></div>
+      <div class="stat-card c-red"><div class="stat-card-lbl">Unread</div><div class="stat-card-num" id="psy-stat-unread">0</div><div class="stat-card-sub">Awaiting review</div></div>
+      <div class="stat-card c-green"><div class="stat-card-lbl">Revenue</div><div class="stat-card-num" id="psy-stat-rev">$0</div><div class="stat-card-sub">At $30 / session</div></div>
+    </div>
+    <div class="filters" style="margin-bottom:1rem;">
+      <button class="filter-btn on" id="psy-fb-all" onclick="setPsyFilter('all',this)">All</button>
+      <button class="filter-btn" id="psy-fb-unread" onclick="setPsyFilter('unread',this)">Unread</button>
+      <button class="filter-btn" id="psy-fb-video" onclick="setPsyFilter('Video',this)">Video</button>
+      <button class="filter-btn" id="psy-fb-phone" onclick="setPsyFilter('Phone',this)">Phone</button>
+      <button class="filter-btn" id="psy-fb-chat" onclick="setPsyFilter('Text Chat',this)">Text Chat</button>
+      <input class="search-box" id="psy-search" placeholder="Search name, email…" oninput="renderPsychTab()"/>
+    </div>
+    <div id="psy-tab-list"></div>
+  </div>
+
+<!-- Detail Overlay -->
+<div id="detail-overlay" onclick="if(event.target===this)closeDetail()">
+  <div id="detail-panel">
+    <div class="dp-header">
+      <div class="dp-icon" id="dp-icon">✦</div>
+      <div class="dp-title" id="dp-title">Message Details</div>
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dp-body" id="dp-body"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =============================================
+   STATE
+   ============================================= */
+let allMessages = [], activeFilter = 'all', activeSearch = '';
+let accountSettings = {};
+let customTags = [];
+let refreshTimer = null;
+
+const TAG_PRESETS = [
+  { id:'vip',      label:'⭐ VIP',       cls:'tag-vip' },
+  { id:'urgent',   label:'⚠ Urgent',    cls:'tag-urgent' },
+  { id:'followup', label:'↺ Follow Up', cls:'tag-followup' },
+  { id:'paid',     label:'✓ Paid',       cls:'tag-paid' },
+  { id:'new',      label:'✦ New',        cls:'tag-new' },
+  { id:'closed',   label:'✕ Closed',    cls:'tag-closed' },
+];
+
+/* =============================================
+   EMAILJS CONFIG
+   ============================================= */
+const EMAILJS_PUBLIC_KEY    = 'OMWsY_I8-iwVAGi5X';
+const EMAILJS_SERVICE_ID    = 'service_bih2em6';
+const EMAILJS_NOTIF_TEMPLATE = 'q9qypwx';  // admin notification template
+
+try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) { console.warn('EmailJS init failed', e); }
+
+async function adminSendEmail(toEmail, toName, subject, message){
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NOTIF_TEMPLATE, {
+      to_email: toEmail,
+      to_name: toName || toEmail.split('@')[0],
+      notif_subject: subject,
+      notif_message: message
+    });
+    return true;
+  } catch(e){
+    console.warn('EmailJS notification failed:', e);
+    return false;
+  }
+}
+
+/* =============================================
+   STORAGE HELPERS — localStorage + BroadcastChannel
+   ============================================= */
+const _bc = (() => { try { return new BroadcastChannel('soul_healing_sync'); } catch(e){ return null; } })();
+
+async function storageGet(key, shared=false){
+  try {
+    const val = localStorage.getItem('sh_' + key);
+    return val ? { key, value: val } : null;
+  } catch(e){ return null; }
+}
+async function storageSet(key, val, shared=false){
+  try {
+    localStorage.setItem('sh_' + key, val);
+    if(_bc) _bc.postMessage({ key, val });
+    return { key, value: val };
+  } catch(e){ return null; }
+}
+
+// Announce to launcher that admin tab is open
+if(_bc){
+  _bc.postMessage({ key:'__tab_hello__', role:'admin' });
+  window.addEventListener('beforeunload', ()=>_bc.postMessage({ key:'__tab_bye__', role:'admin' }));
+}
+
+// Listen for changes from client tab and auto-refresh
+if(_bc) _bc.addEventListener('message', (e) => {
+  if(!e.data) return;
+  const { key } = e.data;
+
+  // Launcher pinging to check if this tab is open
+  if(key === '__launcher_ping__'){
+    _bc.postMessage({ key:'__tab_hello__', role:'admin' });
+    return;
+  }
+
+  // New contact/booking/chat from client side
+  if(key === 'admin_messages') {
+    loadMessages();
+  }
+
+  // Client sent a portal chat message — refresh portal messages tab if open
+  if(key && key.startsWith('portal_chat_')) {
+    const tab = document.getElementById('tab-portalmsg');
+    if(tab && tab.classList.contains('active')) renderPortalChatList();
+    renderSidebar();
+  }
+
+  // Admin assigned a time slot (reflected back, e.g. in another admin tab)
+  if(key === 'time_slots') {
+    renderSlotsTable();
+    refreshAssignSlotSelect();
+  }
+
+  // Payment details updated
+  if(key === 'admin_payment_details') {
+    loadPaymentDetails();
+  }
+});
+
+/* =============================================
+   INIT
+   ============================================= */
+async function init(){
+  await loadMessages();
+  await loadAccountSettings();
+  await loadCustomTags();
+  await loadPaymentDetails();
+  renderAccountForm();
+  renderTagsPanel();
+  startAutoRefresh();
+  document.getElementById('search-box').addEventListener('input', function(){ activeSearch = this.value; renderTable(); });
+  // Set today as default for slot date
+  const sd = document.getElementById('slot-date');
+  if(sd) sd.valueAsDate = new Date();
+}
+
+/* =============================================
+   MESSAGES
+   ============================================= */
+async function loadMessages(){
+  const r = await storageGet('admin_messages', true);
+  try{ allMessages = r ? JSON.parse(r.value) : []; }catch(e){ allMessages = []; }
+  // Ensure tags array exists
+  allMessages.forEach(m=>{ if(!m.tags) m.tags=[]; if(!m.adminReplies) m.adminReplies=[]; });
+  renderStats(); renderTable(); renderSidebar(); renderClients(); renderChatList();
+  // Also refresh psych tab badge & content if active
+  const psychTab = document.getElementById('tab-psychologist');
+  if(psychTab && psychTab.classList.contains('active')) renderPsychTab();
+  else { // Just update badge
+    const psychMsgs = allMessages.filter(m=>m.type==='psychology');
+    const b = document.getElementById('sb-psych-tab');
+    if(b){ b.textContent=psychMsgs.length; b.classList.toggle('show',psychMsgs.length>0); }
+  }
+}
+
+function renderStats(){
+  const total = allMessages.length;
+  const contacts = allMessages.filter(m=>m.type==='contact').length;
+  const bookings = allMessages.filter(m=>m.type==='booking').length;
+  const unread = allMessages.filter(m=>!m.read).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-contact').textContent = contacts;
+  document.getElementById('stat-booking').textContent = bookings;
+  document.getElementById('stat-unread').textContent = unread;
+  const pill = document.getElementById('unread-pill');
+  if(unread>0){ pill.textContent = unread+' new'; pill.classList.add('show'); } else pill.classList.remove('show');
+}
+
+function renderSidebar(){
+  const all = allMessages.length;
+  const contact = allMessages.filter(m=>m.type==='contact').length;
+  const booking = allMessages.filter(m=>m.type==='booking').length;
+  const chat = allMessages.filter(m=>m.type==='chat').length;
+  const psychology = allMessages.filter(m=>m.type==='psychology').length;
+  const unread = allMessages.filter(m=>!m.read).length;
+  // Count unread portal chat messages across all portal_chat_ conversations
+  let portalUnread = 0;
+  try {
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith('sh_portal_chat_')){
+        const msgs = JSON.parse(localStorage.getItem(k)||'[]');
+        portalUnread += msgs.filter(m=>m.role==='client'&&!m.adminRead).length;
+      }
+    }
+  } catch(e){}
+  const setC = (id,n)=>{ const el=document.getElementById(id); if(el){ el.textContent=n; el.classList.toggle('show',n>0); } };
+  setC('sb-all',all); setC('sb-contact',contact); setC('sb-booking',booking); setC('sb-chat',chat); setC('sb-psychology',psychology); setC('sb-unread',unread); setC('sb-chatreply',chat); setC('sb-portalmsg',portalUnread);
+}
+
+function getFiltered(){
+  let list = allMessages;
+  if(activeFilter==='unread') list = list.filter(m=>!m.read);
+  else if(activeFilter!=='all') list = list.filter(m=>m.type===activeFilter);
+  if(activeSearch){
+    const q = activeSearch.toLowerCase();
+    list = list.filter(m=>(m.name||'').toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q)||(m.service||'').toLowerCase().includes(q)||(m.subject||'').toLowerCase().includes(q));
+  }
+  return list;
+}
+
+function fmtTime(ts){
+  try{
+    const d=new Date(ts), now=new Date();
+    const diff=(now-d)/1000;
+    if(diff<60) return 'just now';
+    if(diff<3600) return Math.floor(diff/60)+'m ago';
+    if(diff<86400) return Math.floor(diff/3600)+'h ago';
+    return d.toLocaleDateString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  }catch(e){ return ts||'—'; }
+}
+
+function typeBadge(t){
+  if(t==='contact') return '<span class="type-badge type-contact">✉ Contact</span>';
+  if(t==='booking') return '<span class="type-badge type-booking">✦ Booking</span>';
+  if(t==='chat')    return '<span class="type-badge type-chat">☽ Chat</span>';
+  if(t==='signup')   return '<span class="type-badge type-signup">✳ Sign Up</span>';
+  if(t==='psychology') return '<span class="type-badge type-psychology">🧠 Psychologist</span>';
+  return '<span class="type-badge">'+t+'</span>';
+}
+
+function renderTagBadges(tags){
+  if(!tags||!tags.length) return '<span style="color:var(--muted);font-size:.7rem;">—</span>';
+  return tags.map(t=>{
+    const preset = TAG_PRESETS.find(p=>p.id===t);
+    if(preset) return `<span class="tag-badge ${preset.cls}">${preset.label}</span>`;
+    // Custom tag
+    const custom = customTags.find(c=>c.id===t);
+    if(custom) return `<span class="tag-badge" style="background:${getTagColorBg(custom.color)};color:${getTagColorFg(custom.color)};border:1px solid ${getTagColorBorder(custom.color)}">${custom.label}</span>`;
+    return `<span class="tag-badge tag-new">${t}</span>`;
+  }).join('');
+}
+
+function getTagColorBg(c){ const m={'gold':'rgba(184,146,42,.2)','red':'rgba(224,82,82,.15)','blue':'rgba(91,155,213,.15)','green':'rgba(76,175,116,.15)','purple':'rgba(155,109,206,.15)','muted':'rgba(255,255,255,.06)'}; return m[c]||m.gold; }
+function getTagColorFg(c){ const m={'gold':'var(--gold)','red':'var(--red)','blue':'var(--blue)','green':'var(--green)','purple':'var(--purple)','muted':'var(--muted)'}; return m[c]||m.gold; }
+function getTagColorBorder(c){ const m={'gold':'rgba(184,146,42,.35)','red':'rgba(224,82,82,.3)','blue':'rgba(91,155,213,.3)','green':'rgba(76,175,116,.3)','purple':'rgba(155,109,206,.3)','muted':'rgba(255,255,255,.12)'}; return m[c]||m.gold; }
+
+function renderTable(){
+  const list = getFiltered();
+  const tbody = document.getElementById('tbl-body');
+  if(list.length===0){
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">✦</div><div class="empty-title">No messages yet</div><div class="empty-sub">Messages from the website contact form, bookings, and chat will appear here in real time.</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(m=>{
+    const realIdx = allMessages.indexOf(m);
+    const amtHtml = m.amount ? `<div class="tbl-amount">$${m.amount}</div>` : '<span style="color:var(--muted);font-size:.75rem;">—</span>';
+    const replyBtn = (m.type==='chat'||m.type==='contact') ? `<button class="btn-reply" onclick="event.stopPropagation();openReply(${realIdx})">↩ Reply</button>` : '';
+    return `<tr class="${m.read?'':'unread'}">
+      <td>${typeBadge(m.type)}</td>
+      <td><div class="tbl-name">${esc(m.name||'—')}</div><div class="tbl-sub">${esc(m.email||'')}</div>${m.phone?`<div class="tbl-sub">${esc(m.phone)}</div>`:''}</td>
+      <td><div class="tbl-service">${esc(m.service||m.subject||(m.type==='signup'?'New Client Registration':'')||'—')}</div>${m.state?`<div class="tbl-sub">${esc(m.state)}</div>`:''}</td>
+      <td>${renderTagBadges(m.tags)}</td>
+      <td>${amtHtml}</td>
+      <td><div class="tbl-time">${fmtTime(m.ts)}</div>${m.ref?`<div class="tbl-sub">${esc(m.ref)}</div>`:''}</td>
+      <td><div class="tbl-actions">
+        <button class="btn-view" onclick="viewMsg(${realIdx})">View</button>
+        ${replyBtn}
+        <button class="btn-del" onclick="delMsg(${realIdx})">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showTab(tab, filter, el){
+  // Hide all tabs
+  document.querySelectorAll('.main').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(el) el.classList.add('active');
+
+  if(tab==='messages'){
+    activeFilter = filter || 'all';
+    // Sync filter buttons
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+    const fbEl = document.getElementById('fb-'+activeFilter);
+    if(fbEl) fbEl.classList.add('on');
+    renderTable();
+  } else if(tab==='clients'){
+    renderClients();
+  } else if(tab==='chats'){
+    renderChatList();
+  } else if(tab==='schedule'){
+    renderSlotsTable();
+    refreshAssignSlotSelect();
+  } else if(tab==='portalmsg'){
+    renderPortalChatList();
+  } else if(tab==='psychologist'){
+    renderPsychTab();
+  } else if(tab==='account'){
+    renderAccountForm();
+    renderPaymentForm();
+    renderPaymentPreview();
+    renderTagsPanel();
+  }
+}
+
+function setFilterBtn(f, el){
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('nav-'+f)?.classList.add('active');
+  renderTable();
+}
+
+/* =============================================
+   VIEW MESSAGE DETAIL (with tag editing & reply)
+   ============================================= */
+async function viewMsg(idx){
+  const m = allMessages[idx];
+  if(!m) return;
+  if(!m.read){
+    m.read = true;
+    await storageSet('admin_messages', JSON.stringify(allMessages), true);
+    renderStats(); renderTable();
+  }
+  document.getElementById('dp-icon').textContent = m.type==='booking'?'✦':m.type==='chat'?'☽':'✉';
+  document.getElementById('dp-title').textContent = m.type==='booking'?'Booking Details':m.type==='chat'?'Chat Thread':'Contact Message';
+
+  const allTagIds = [...TAG_PRESETS.map(t=>t.id), ...customTags.map(t=>t.id)];
+  const row=(lbl,val,cls='')=>`<div class="dp-row"><div class="dp-lbl">${lbl}</div><div class="dp-val ${cls}">${esc(val||'—')}</div></div>`;
+
+  let html = '';
+  html += row('Type', m.type.charAt(0).toUpperCase()+m.type.slice(1));
+  html += row('Name', m.name);
+  if(m.email) html += row('Email', m.email);
+  if(m.phone) html += row('Phone', m.phone);
+  if(m.state) html += row('State', m.state);
+  if(m.service) html += row('Service', m.service, 'gold');
+  if(m.amount) html += row('Amount', '$'+m.amount, 'green');
+  if(m.payment) html += row('Payment', m.payment);
+  if(m.ref) html += row('Ref', m.ref);
+  if(m.date) html += row('Date', m.date);
+  if(m.time) html += row('Time', m.time+' EST');
+  if(m.format) html += row('Format', m.format);
+  if(m.source) html += row('Heard Via', m.source.charAt(0).toUpperCase()+m.source.slice(1));
+  html += '<div class="dp-sep"></div>';
+  if(m.note) html += `<div class="dp-row"><div class="dp-lbl">Note</div><div class="dp-val" style="white-space:pre-wrap">${esc(m.note)}</div></div>`;
+  if(m.message && m.type!=='chat'){
+    html += `<div class="dp-row"><div class="dp-lbl">Message</div><div class="dp-val" style="white-space:pre-wrap">${esc(m.message)}</div></div>`;
+  }
+  if(m.notes){
+    html += `<div class="dp-row"><div class="dp-lbl">Notes</div><div class="dp-val" style="white-space:pre-wrap">${esc(m.notes)}</div></div>`;
+  }
+  if(m.thread){
+    html += `<div class="dp-row"><div class="dp-lbl">Chat</div></div><div class="dp-chat">${esc(m.thread)}</div>`;
+  }
+  // Admin replies
+  if(m.adminReplies && m.adminReplies.length){
+    html += '<div class="dp-sep"></div>';
+    html += `<div class="dp-row"><div class="dp-lbl">Replies</div></div>`;
+    m.adminReplies.forEach(r=>{
+      html += `<div class="admin-reply-bubble"><div class="admin-reply-label">Admin · ${fmtTime(r.ts)}</div>${esc(r.text)}</div>`;
+    });
+  }
+  html += row('Received', new Date(m.ts).toLocaleString());
+
+  // Tags editor
+  html += '<div class="dp-sep"></div>';
+  html += `<div class="dp-row"><div class="dp-lbl">Tags</div><div class="dp-val"><div class="tags-edit-wrap" id="tag-edit-${idx}">`;
+  const allTagOptions = [...TAG_PRESETS, ...customTags];
+  allTagOptions.forEach(t=>{
+    const active = (m.tags||[]).includes(t.id);
+    let activeCls = active ? `active-${t.id}` : '';
+    // For custom tags use color
+    if(!TAG_PRESETS.find(p=>p.id===t.id)){
+      activeCls = active ? 'active-new' : '';
+    }
+    html += `<button class="tag-toggle ${activeCls}" onclick="toggleTag(${idx},'${t.id}',this)">${t.label}</button>`;
+  });
+  html += '</div></div></div>';
+
+  // Reply box (for contact & chat)
+  if(m.type==='contact'||m.type==='chat'){
+    html += '<div class="dp-sep"></div>';
+    html += `<div class="reply-box">
+      <div class="reply-box-header">↩ Reply to ${esc(m.name||'Client')}</div>
+      <textarea class="reply-textarea" id="reply-text-${idx}" placeholder="Write your reply here…"></textarea>
+      <div class="reply-actions">
+        <button class="btn-send-reply" onclick="sendReply(${idx})">Send Reply</button>
+        <button class="btn-cancel-reply" onclick="document.getElementById('reply-text-${idx}').value=''">Clear</button>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('dp-body').innerHTML = html;
+  document.getElementById('detail-overlay').classList.add('active');
+}
+
+async function toggleTag(idx, tagId, btn){
+  const m = allMessages[idx];
+  if(!m) return;
+  if(!m.tags) m.tags = [];
+  const pos = m.tags.indexOf(tagId);
+  if(pos>=0) m.tags.splice(pos,1);
+  else m.tags.push(tagId);
+  await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  renderTable(); renderClients();
+  // Update button style
+  const preset = TAG_PRESETS.find(p=>p.id===tagId);
+  const activeCls = `active-${tagId}`;
+  if(m.tags.includes(tagId)){
+    btn.classList.add(activeCls);
+  } else {
+    btn.classList.remove(activeCls);
+  }
+  showToast('Tag updated');
+}
+
+async function sendReply(idx){
+  const m = allMessages[idx];
+  const textEl = document.getElementById('reply-text-'+idx);
+  if(!textEl||!textEl.value.trim()) return;
+  const replyText = textEl.value.trim();
+  if(!m.adminReplies) m.adminReplies = [];
+  m.adminReplies.push({ text: replyText, ts: new Date().toISOString() });
+  textEl.value = '';
+  await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  if(_bc) _bc.postMessage({ key: 'admin_messages', val: JSON.stringify(allMessages) });
+
+  // Send email notification to client
+  if(m.email){
+    const sent = await adminSendEmail(
+      m.email,
+      m.name || m.email.split('@')[0],
+      'New Reply from Soul Healing',
+      `You have a new reply from your healer:\n\n"${replyText}"\n\nLog in to your Client Portal to view the full conversation and respond.`
+    );
+    showToast(sent ? 'Reply sent & email notification delivered ✓' : 'Reply sent ✓ (email notification failed)');
+  } else {
+    showToast('Reply sent ✓');
+  }
+  viewMsg(idx);
+}
+
+async function openReply(idx){
+  await viewMsg(idx);
+  setTimeout(()=>{
+    const el = document.getElementById('reply-text-'+idx);
+    if(el) el.focus();
+  }, 200);
+}
+
+function closeDetail(){ document.getElementById('detail-overlay').classList.remove('active'); }
+
+async function delMsg(idx){
+  allMessages.splice(idx,1);
+  await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  renderStats(); renderTable(); renderSidebar(); renderClients(); renderChatList();
+  showToast('Message deleted');
+}
+
+async function clearAll(){
+  if(!confirm('Delete ALL messages? This cannot be undone.')) return;
+  allMessages = [];
+  await storageSet('admin_messages', JSON.stringify([]), true);
+  renderStats(); renderTable(); renderSidebar(); renderClients(); renderChatList();
+  showToast('All messages cleared');
+}
+
+/* =============================================
+   CLIENTS TAB
+   ============================================= */
+function renderClients(){
+  const query = (document.getElementById('client-search')?.value||'').toLowerCase();
+  // Build unique client map from all messages
+  const clientMap = {};
+  allMessages.forEach(m=>{
+    const key = m.email || m.name || m.id;
+    if(!key) return;
+    if(!clientMap[key]){
+      clientMap[key] = {
+        name: m.name||'Unknown',
+        email: m.email||'',
+        phone: m.phone||'',
+        state: m.state||'',
+        messages: [],
+        tags: [],
+        lastTs: m.ts
+      };
+    }
+    clientMap[key].messages.push(m);
+    if(m.ts > clientMap[key].lastTs) clientMap[key].lastTs = m.ts;
+    // Merge tags
+    (m.tags||[]).forEach(t=>{ if(!clientMap[key].tags.includes(t)) clientMap[key].tags.push(t); });
+  });
+
+  let clients = Object.values(clientMap);
+  if(query){
+    clients = clients.filter(c=>
+      c.name.toLowerCase().includes(query)||
+      c.email.toLowerCase().includes(query)||
+      c.state.toLowerCase().includes(query)
+    );
+  }
+
+  const grid = document.getElementById('clients-grid');
+  if(!clients.length){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-title">No clients yet</div><div class="empty-sub">Clients will appear here when messages are received.</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = clients.map(c=>{
+    const bookings = c.messages.filter(m=>m.type==='booking');
+    const totalSpend = bookings.reduce((s,m)=>s+(parseInt(m.amount)||0),0);
+    const chats = c.messages.filter(m=>m.type==='chat').length;
+    const initials = c.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    return `<div class="client-card">
+      <div class="client-card-top">
+        <div class="client-avatar">${initials}</div>
+        <div>
+          <div class="client-name">${esc(c.name)}</div>
+          <div class="client-email">${esc(c.email||c.phone||c.state||'—')}</div>
+        </div>
+      </div>
+      <div class="client-stats-row">
+        <div class="client-stat"><div class="client-stat-num">${c.messages.length}</div><div class="client-stat-lbl">Messages</div></div>
+        <div class="client-stat"><div class="client-stat-num">${bookings.length}</div><div class="client-stat-lbl">Bookings</div></div>
+        <div class="client-stat"><div class="client-stat-num" style="color:var(--green)">$${totalSpend}</div><div class="client-stat-lbl">Spent</div></div>
+      </div>
+      ${c.tags.length?`<div class="client-tags">${renderTagBadges(c.tags)}</div>`:''}
+      <div class="client-actions">
+        <button class="btn-view" onclick="filterByClient('${esc(c.email||c.name)}')">View Messages</button>
+        ${c.email?`<a href="mailto:${esc(c.email)}" style="text-decoration:none"><button class="btn-reply">✉ Email</button></a>`:''}
+        ${c.phone?`<a href="tel:${esc(c.phone)}" style="text-decoration:none"><button class="btn-reply">☎ Call</button></a>`:''}
+      </div>
+      <div class="client-last">Last contact: ${fmtTime(c.lastTs)} · ${c.state||'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterByClient(identifier){
+  activeSearch = identifier;
+  activeFilter = 'all';
+  document.querySelectorAll('.main').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('tab-messages').classList.add('active');
+  document.getElementById('nav-all').classList.add('active');
+  document.getElementById('search-box').value = identifier;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('fb-all').classList.add('on');
+  renderTable();
+}
+
+/* =============================================
+   CHATS TAB
+   ============================================= */
+function renderChatList(){
+  const chats = allMessages.filter(m=>m.type==='chat');
+  const list = document.getElementById('chat-list');
+  if(!chats.length){
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">☽</div><div class="empty-title">No chat threads yet</div><div class="empty-sub">Chat sessions from the website will appear here.</div></div>`;
+    return;
+  }
+  list.innerHTML = chats.map((m,i)=>{
+    const idx = allMessages.indexOf(m);
+    const preview = m.thread ? m.thread.substring(0,80)+'…' : 'No messages yet';
+    const replies = m.adminReplies||[];
+    return `<div class="chat-item" id="chat-item-${idx}">
+      <div class="chat-item-header" onclick="expandChat(${idx})">
+        <div class="chat-item-avatar">☽</div>
+        <div class="chat-item-info">
+          <div class="chat-item-name">${esc(m.name||'Chat Visitor')}</div>
+          <div class="chat-item-preview">${esc(preview)}</div>
+        </div>
+        <div class="chat-item-meta">
+          <span class="chat-item-time">${fmtTime(m.ts)}</span>
+          ${!m.read?'<span class="type-badge type-chat" style="font-size:.55rem;padding:.12rem .4rem;">Unread</span>':''}
+          <span class="chat-expand">▾</span>
+        </div>
+      </div>
+      <div class="chat-body" id="chat-body-${idx}">
+        ${m.thread?`<div class="chat-thread-wrap">${esc(m.thread)}</div>`:'<div class="tbl-sub" style="margin-bottom:.75rem;">No transcript available</div>'}
+        ${replies.length?`<div style="margin-bottom:.75rem;">${replies.map(r=>`<div class="admin-reply-bubble"><div class="admin-reply-label">Your reply · ${fmtTime(r.ts)}</div>${esc(r.text)}</div>`).join('')}</div>`:''}
+        <div class="chat-reply-row">
+          <input class="chat-reply-input" id="chat-reply-${idx}" placeholder="Type a reply note (saved for reference)…" onkeydown="if(event.key==='Enter')chatReply(${idx})"/>
+          <button class="btn-chat-reply" onclick="chatReply(${idx})">↩ Reply</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function expandChat(idx){
+  const item = document.getElementById('chat-item-'+idx);
+  const body = document.getElementById('chat-body-'+idx);
+  if(!item||!body) return;
+  item.classList.toggle('expanded');
+  // Mark as read
+  const m = allMessages[idx];
+  if(m && !m.read){
+    m.read = true;
+    storageSet('admin_messages', JSON.stringify(allMessages), true);
+    renderStats(); renderSidebar();
+  }
+}
+
+async function chatReply(idx){
+  const inp = document.getElementById('chat-reply-'+idx);
+  if(!inp||!inp.value.trim()) return;
+  const m = allMessages[idx];
+  if(!m) return;
+  const replyText = inp.value.trim();
+  if(!m.adminReplies) m.adminReplies = [];
+  m.adminReplies.push({ text: replyText, ts: new Date().toISOString() });
+  inp.value = '';
+  await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  if(_bc) _bc.postMessage({ key: 'admin_messages', val: JSON.stringify(allMessages) });
+  // Email notification to client
+  if(m.email){
+    await adminSendEmail(
+      m.email,
+      m.name || m.email.split('@')[0],
+      'New Message from Soul Healing',
+      `Your healer has replied to your message:\n\n"${replyText}"\n\nVisit our website and open the chat widget to continue the conversation.`
+    );
+  }
+  showToast('Reply sent ✓');
+  renderChatList();
+  setTimeout(()=>{
+    const item = document.getElementById('chat-item-'+idx);
+    if(item&&!item.classList.contains('expanded')) expandChat(idx);
+    else if(item) item.classList.add('expanded');
+  }, 50);
+}
+
+/* =============================================
+   ACCOUNT SETTINGS
+   ============================================= */
+async function loadAccountSettings(){
+  const r = await storageGet('admin_settings', false);
+  try{ accountSettings = r ? JSON.parse(r.value) : {}; }catch(e){ accountSettings = {}; }
+}
+
+async function loadCustomTags(){
+  const r = await storageGet('admin_custom_tags', false);
+  try{ customTags = r ? JSON.parse(r.value) : []; }catch(e){ customTags = []; }
+}
+
+/* =============================================
+   PAYMENT DETAILS
+   ============================================= */
+let paymentDetails = {};
+
+async function loadPaymentDetails(){
+  const r = await storageGet('admin_payment_details', false);
+  try{ paymentDetails = r ? JSON.parse(r.value) : {}; }catch(e){ paymentDetails = {}; }
+  renderPaymentForm();
+  renderPaymentPreview();
+}
+
+function renderPaymentForm(){
+  const p = paymentDetails;
+  const setVal = (id,val)=>{ const el=document.getElementById(id); if(el) el.value=val||''; };
+  setVal('pay-cashapp', p.cashapp||'');
+  setVal('pay-chime',   p.chime||'');
+  setVal('pay-zelle',   p.zelle||'');
+  setVal('pay-paypal',  p.paypal||'');
+  setVal('pay-bank',    p.bank||'');
+  setVal('pay-note',    p.note||'');
+}
+
+function renderPaymentPreview(){
+  const p = paymentDetails;
+  const wrap = document.getElementById('pay-preview-wrap');
+  const box  = document.getElementById('pay-preview');
+  if(!wrap||!box) return;
+  const lines = [];
+  if(p.cashapp)  lines.push(`💳 <strong>CashApp:</strong> ${esc(p.cashapp)}`);
+  if(p.chime)    lines.push(`🟢 <strong>Chime:</strong> ${esc(p.chime)}`);
+  if(p.zelle)    lines.push(`💙 <strong>Zelle:</strong> ${esc(p.zelle)}`);
+  if(p.paypal)   lines.push(`🅿 <strong>PayPal:</strong> ${esc(p.paypal)}`);
+  if(p.bank)     lines.push(`🏦 <strong>Bank Transfer:</strong> ${esc(p.bank)}`);
+  if(p.note)     lines.push(`💬 <em>${esc(p.note)}</em>`);
+  if(!lines.length){
+    wrap.style.display='none'; return;
+  }
+  wrap.style.display='block';
+  box.innerHTML = lines.join('<br/>');
+}
+
+async function savePaymentDetails(){
+  paymentDetails = {
+    cashapp: (document.getElementById('pay-cashapp')?.value||'').trim(),
+    chime:   (document.getElementById('pay-chime')?.value||'').trim(),
+    zelle:   (document.getElementById('pay-zelle')?.value||'').trim(),
+    paypal:  (document.getElementById('pay-paypal')?.value||'').trim(),
+    bank:    (document.getElementById('pay-bank')?.value||'').trim(),
+    note:    (document.getElementById('pay-note')?.value||'').trim(),
+  };
+  await storageSet('admin_payment_details', JSON.stringify(paymentDetails), true);
+  if(_bc) _bc.postMessage({ key: 'admin_payment_details', val: JSON.stringify(paymentDetails) });
+  renderPaymentPreview();
+  showToast('Payment details saved ✓');
+}
+
+function renderAccountForm(){
+  const s = accountSettings;
+  const setVal = (id,val)=>{ const el=document.getElementById(id); if(el) el.value=val||''; };
+  setVal('acc-biz-name', s.bizName || 'Soul Healing');
+  setVal('acc-email', s.email || '');
+  setVal('acc-phone', s.phone || '');
+  setVal('acc-hours', s.hours || 'Mon–Sat, 9am–7pm EST');
+  setVal('acc-notif-email', s.notifEmail || '');
+  setVal('acc-greeting', s.greeting || "Welcome to Soul Healing. 🙏 I'm here to listen and guide you.");
+  setVal('acc-quick-replies', (s.quickReplies||[]).join('\n'));
+  setVal('acc-reply-delay', s.replyDelay || 2);
+  const rfEl = document.getElementById('acc-refresh');
+  if(rfEl) rfEl.value = s.refreshInterval || '15000';
+  const dfEl = document.getElementById('acc-default-filter');
+  if(dfEl) dfEl.value = s.defaultFilter || 'all';
+  const aptEl = document.getElementById('acc-autopay-tag');
+  if(aptEl) aptEl.value = s.autoPayTag || 'paid';
+}
+
+function renderTagsPanel(){
+  const wrap = document.getElementById('acc-tags-wrap');
+  const allTags = [...TAG_PRESETS, ...customTags];
+  wrap.innerHTML = allTags.map(t=>`
+    <div class="acc-tag-item">
+      <span>${t.label}</span>
+      ${customTags.find(c=>c.id===t.id)?`<button class="acc-tag-del" onclick="removeCustomTag('${t.id}')">✕</button>`:'<span style="font-size:.6rem;color:var(--muted)">(preset)</span>'}
+    </div>
+  `).join('');
+}
+
+async function saveProfile(){
+  accountSettings.bizName = document.getElementById('acc-biz-name').value;
+  accountSettings.email = document.getElementById('acc-email').value;
+  accountSettings.phone = document.getElementById('acc-phone').value;
+  accountSettings.hours = document.getElementById('acc-hours').value;
+  await storageSet('admin_settings', JSON.stringify(accountSettings), false);
+  showToast('Profile saved ✓');
+}
+
+async function saveNotifSettings(){
+  accountSettings.notifEmail = document.getElementById('acc-notif-email').value;
+  accountSettings.refreshInterval = document.getElementById('acc-refresh').value;
+  accountSettings.defaultFilter = document.getElementById('acc-default-filter').value;
+  await storageSet('admin_settings', JSON.stringify(accountSettings), false);
+  startAutoRefresh();
+  showToast('Settings saved ✓');
+}
+
+async function saveChatSettings(){
+  accountSettings.greeting = document.getElementById('acc-greeting').value;
+  accountSettings.quickReplies = document.getElementById('acc-quick-replies').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  accountSettings.replyDelay = parseInt(document.getElementById('acc-reply-delay').value)||2;
+  await storageSet('admin_settings', JSON.stringify(accountSettings), false);
+  showToast('Chat settings saved ✓');
+}
+
+async function addCustomTag(){
+  const inp = document.getElementById('new-tag-input');
+  const colorEl = document.getElementById('new-tag-color');
+  const label = inp.value.trim();
+  if(!label) return;
+  const id = 'custom_'+label.toLowerCase().replace(/\s+/g,'_');
+  if(customTags.find(t=>t.id===id)||TAG_PRESETS.find(t=>t.id===id)){
+    showToast('Tag already exists'); return;
+  }
+  customTags.push({ id, label, color: colorEl.value });
+  inp.value = '';
+  await storageSet('admin_custom_tags', JSON.stringify(customTags), false);
+  renderTagsPanel();
+  showToast('Tag added ✓');
+}
+
+async function removeCustomTag(id){
+  customTags = customTags.filter(t=>t.id!==id);
+  await storageSet('admin_custom_tags', JSON.stringify(customTags), false);
+  renderTagsPanel();
+  showToast('Tag removed');
+}
+
+async function saveTags(){
+  await storageSet('admin_custom_tags', JSON.stringify(customTags), false);
+  showToast('Tags saved ✓');
+}
+
+/* =============================================
+   PAYMENT TAG MANAGEMENT
+   ============================================= */
+async function saveAutoPayTag(){
+  accountSettings.autoPayTag = document.getElementById('acc-autopay-tag').value;
+  await storageSet('admin_settings', JSON.stringify(accountSettings), false);
+  showToast('Auto-tag setting saved ✓');
+}
+
+async function bulkTag(type, tagId){
+  const targets = allMessages.filter(m => m.type === type);
+  targets.forEach(m => { if(!m.tags) m.tags=[]; if(!m.tags.includes(tagId)) m.tags.push(tagId); });
+  await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  if(_bc) _bc.postMessage({ key: 'admin_messages', val: JSON.stringify(allMessages) });
+  renderTable(); renderClients();
+  showToast(`✓ Paid tag applied to ${targets.length} booking(s)`);
+}
+
+async function bulkUntag(tagId){
+  allMessages.forEach(m => { if(m.tags) m.tags = m.tags.filter(t => t !== tagId); });
+  await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  if(_bc) _bc.postMessage({ key: 'admin_messages', val: JSON.stringify(allMessages) });
+  renderTable(); renderClients();
+  showToast('Tags removed');
+}
+
+async function tagClientByIdentifier(){
+  const identifier = (document.getElementById('pay-client-id').value || '').trim().toLowerCase();
+  const tagId = document.getElementById('pay-tag-select').value;
+  if(!identifier){ showToast('Enter a client email or name'); return; }
+  let count = 0;
+  allMessages.forEach(m => {
+    const match = (m.email||'').toLowerCase() === identifier || (m.name||'').toLowerCase().includes(identifier);
+    if(match){ if(!m.tags) m.tags=[]; if(!m.tags.includes(tagId)){ m.tags.push(tagId); count++; } }
+  });
+  if(!count){ showToast('No matching client found'); return; }
+  await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  if(_bc) _bc.postMessage({ key: 'admin_messages', val: JSON.stringify(allMessages) });
+  renderTable(); renderClients();
+  showToast(`Tag applied to ${count} message(s) ✓`);
+}
+
+/* =============================================
+   AUTO REFRESH
+   ============================================= */
+function startAutoRefresh(){
+  if(refreshTimer) clearInterval(refreshTimer);
+  const interval = parseInt(accountSettings.refreshInterval)||15000;
+  refreshTimer = setInterval(loadMessages, interval);
+}
+
+/* =============================================
+   TOAST & MISC
+   ============================================= */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span style="color:var(--gold);font-size:.7rem;">✦</span> ${msg}`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+
+/* =============================================
+   SCHEDULE MANAGER
+   ============================================= */
+let allSlots = [];
+let slotFilter = 'all';
+
+async function loadSlots(){
+  try {
+    const r = localStorage.getItem('sh_time_slots');
+    allSlots = r ? JSON.parse(r) : [];
+  } catch(e){ allSlots = []; }
+}
+
+async function saveSlots(){
+  localStorage.setItem('sh_time_slots', JSON.stringify(allSlots));
+  if(_bc) _bc.postMessage({ key:'time_slots', val:JSON.stringify(allSlots) });
+}
+
+async function addTimeSlot(){
+  const date = document.getElementById('slot-date').value;
+  const start = document.getElementById('slot-time-start').value;
+  const end = document.getElementById('slot-time-end').value;
+  const service = document.getElementById('slot-service').value;
+  const notes = document.getElementById('slot-notes').value;
+  if(!date||!start||!end){ showToast('Date, start and end time are required'); return; }
+  await loadSlots();
+  const slot = {
+    id: 'slot_'+Date.now(),
+    date, start, end, service, notes,
+    status: 'available',
+    assignedEmail: '',
+    assignedName: '',
+    bookingRef: '',
+    amount: '',
+    payStatus: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  allSlots.unshift(slot);
+  await saveSlots();
+  renderSlotsTable();
+  refreshAssignSlotSelect();
+  document.getElementById('slot-notes').value='';
+  showToast('Time slot added ✓');
+}
+
+async function assignSlotToClient(){
+  const email = document.getElementById('assign-email').value.trim();
+  const slotId = document.getElementById('assign-slot-select').value;
+  const amount = document.getElementById('assign-amount').value.trim();
+  const payStatus = document.getElementById('assign-pay-status').value;
+  let ref = document.getElementById('assign-ref').value.trim();
+  if(!email||!slotId){ showToast('Email and slot are required'); return; }
+  await loadSlots();
+  const idx = allSlots.findIndex(s=>s.id===slotId);
+  if(idx<0){ showToast('Slot not found'); return; }
+  if(!ref) ref = 'SH-'+Math.random().toString(36).substr(2,6).toUpperCase();
+  allSlots[idx].status = 'assigned';
+  allSlots[idx].assignedEmail = email;
+  allSlots[idx].bookingRef = ref;
+  allSlots[idx].amount = amount;
+  allSlots[idx].payStatus = payStatus;
+  // Try to find name from messages
+  const msgMatch = allMessages.find(m=>m.email===email);
+  allSlots[idx].assignedName = msgMatch ? msgMatch.name : email;
+  await saveSlots();
+  // Create a portal notification for the client
+  await sendPortalNotification(email, {
+    type: 'slot_assigned',
+    slotId: allSlots[idx].id,
+    date: allSlots[idx].date,
+    start: allSlots[idx].start,
+    end: allSlots[idx].end,
+    service: allSlots[idx].service,
+    bookingRef: ref,
+    amount,
+    payStatus
+  });
+  renderSlotsTable();
+  refreshAssignSlotSelect();
+  document.getElementById('assign-email').value='';
+  document.getElementById('assign-ref').value='';
+  document.getElementById('assign-amount').value='';
+  showToast('Slot assigned & client notified ✓');
+}
+
+async function sendPortalNotification(email, data){
+  try {
+    const key = 'sh_portal_notif_'+email.replace(/[^a-z0-9]/gi,'_');
+    const existing = localStorage.getItem(key);
+    const notifs = existing ? JSON.parse(existing) : [];
+    notifs.unshift({ id:'notif_'+Date.now(), ts:new Date().toISOString(), read:false, ...data });
+    localStorage.setItem(key, JSON.stringify(notifs));
+    if(_bc) _bc.postMessage({ key:'portal_notif', email, val:JSON.stringify(notifs) });
+
+    // Send email for slot assignment
+    if(data.type === 'slot_assigned'){
+      const name = allMessages.find(m=>m.email===email)?.name || email.split('@')[0];
+      const dateStr = data.date ? new Date(data.date).toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : 'TBD';
+      const timeStr = data.start && data.end ? `${data.start} – ${data.end}` : '';
+      await adminSendEmail(
+        email, name,
+        '✦ Your Session Has Been Scheduled — Soul Healing',
+        `Your session has been confirmed!\n\nService: ${data.service || 'Soul Healing Session'}\nDate: ${dateStr}\nTime: ${timeStr}\nBooking Ref: ${data.bookingRef || 'N/A'}\nAmount: ${data.amount ? '$'+data.amount : 'N/A'}\nPayment Status: ${data.payStatus || 'Pending'}\n\nPlease log in to your Client Portal to view full details and manage your booking.\n\nThank you for choosing Soul Healing.`
+      );
+    }
+  } catch(e){ console.warn('sendPortalNotification error:', e); }
+}
+
+async function deleteSlot(id){
+  if(!confirm('Delete this time slot?')) return;
+  await loadSlots();
+  allSlots = allSlots.filter(s=>s.id!==id);
+  await saveSlots();
+  renderSlotsTable();
+  refreshAssignSlotSelect();
+  showToast('Slot deleted');
+}
+
+async function updateSlotPayStatus(id, status){
+  await loadSlots();
+  const s = allSlots.find(s=>s.id===id);
+  if(s){ s.payStatus=status; await saveSlots(); renderSlotsTable(); showToast('Payment status updated ✓'); }
+}
+
+function filterSlots(f, el){
+  slotFilter = f;
+  document.querySelectorAll('.filter-btn[id^="sfb-"]').forEach(b=>b.classList.remove('on'));
+  if(el) el.classList.add('on');
+  renderSlotsTable();
+}
+
+function getFilteredSlots(){
+  const now = new Date();
+  return allSlots.filter(s=>{
+    const slotDate = new Date(s.date+'T'+s.end);
+    const isPast = slotDate < now;
+    if(slotFilter==='available') return s.status==='available' && !isPast;
+    if(slotFilter==='assigned') return s.status==='assigned';
+    if(slotFilter==='past') return isPast;
+    return true;
+  });
+}
+
+async function renderSlotsTable(){
+  await loadSlots();
+  const wrap = document.getElementById('slots-table-wrap');
+  if(!wrap) return;
+  const list = getFilteredSlots();
+  if(!list.length){
+    wrap.innerHTML=`<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No slots</div><div class="empty-sub">No slots match this filter.</div></div>`;
+    return;
+  }
+  const now = new Date();
+  wrap.innerHTML = `<table class="tbl"><thead><tr>
+    <th>Date &amp; Time</th><th>Service</th><th>Status</th><th>Assigned To</th><th>Ref</th><th>Amount</th><th>Payment</th><th>Notes</th><th>Actions</th>
+  </tr></thead><tbody>` + list.map(s=>{
+    const slotDate = new Date(s.date+'T'+s.end);
+    const isPast = slotDate < now;
+    const statusColor = s.status==='assigned'?'var(--gold)':isPast?'var(--muted)':'var(--green)';
+    const statusLabel = s.status==='assigned'?'Assigned':isPast?'Past':'Available';
+    const payColors = {paid:'var(--green)',pending:'var(--gold)',partial:'var(--blue)',waived:'var(--muted)'};
+    const payBg = {paid:'rgba(76,175,116,.15)',pending:'rgba(184,146,42,.12)',partial:'rgba(91,155,213,.12)',waived:'rgba(255,255,255,.05)'};
+    return `<tr>
+      <td><div class="tbl-name">${fmtDate(s.date)}</div><div class="tbl-sub">${s.start} – ${s.end}</div></td>
+      <td><div class="tbl-service">${s.service||'Any'}</div></td>
+      <td><span style="font-size:.68rem;padding:.2rem .55rem;border-radius:2px;background:${statusColor==='var(--green)'?'rgba(76,175,116,.12)':statusColor==='var(--gold)'?'rgba(184,146,42,.12)':'rgba(255,255,255,.05)'};color:${statusColor};border:1px solid ${statusColor}20;">${statusLabel}</span></td>
+      <td>${s.assignedEmail?`<div class="tbl-name" style="font-size:.78rem;">${esc(s.assignedName||s.assignedEmail)}</div><div class="tbl-sub">${esc(s.assignedEmail)}</div>`:'<span style="color:var(--muted)">—</span>'}</td>
+      <td><span style="font-size:.72rem;color:var(--gold-l)">${esc(s.bookingRef||'—')}</span></td>
+      <td><span style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--green)">${s.amount?'$'+s.amount:'—'}</span></td>
+      <td><select onchange="updateSlotPayStatus('${s.id}',this.value)" style="background:${payBg[s.payStatus]||payBg.pending};border:1px solid ${payColors[s.payStatus]||payColors.pending}30;color:${payColors[s.payStatus]||payColors.pending};font-size:.65rem;padding:.2rem .4rem;font-family:'DM Sans',sans-serif;border-radius:2px;outline:none;cursor:pointer;">
+        <option value="pending" ${s.payStatus==='pending'?'selected':''}>Pending</option>
+        <option value="paid" ${s.payStatus==='paid'?'selected':''}>Paid</option>
+        <option value="partial" ${s.payStatus==='partial'?'selected':''}>Partial</option>
+        <option value="waived" ${s.payStatus==='waived'?'selected':''}>Waived</option>
+      </select></td>
+      <td><span style="font-size:.72rem;color:var(--muted)">${esc(s.notes||'—')}</span></td>
+      <td><div class="tbl-actions">
+        ${s.status==='available'?`<button class="btn-reply" onclick="prefillAssign('${s.id}','${esc(s.id)}')">Assign</button>`:''}
+        <button class="btn-del" onclick="deleteSlot('${s.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('') + '</tbody></table>';
+}
+
+function fmtDate(d){
+  try{ return new Date(d+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }catch(e){ return d; }
+}
+
+function prefillAssign(slotId){
+  document.getElementById('assign-slot-select').value = slotId;
+  document.getElementById('assign-email').focus();
+}
+
+async function refreshAssignSlotSelect(){
+  await loadSlots();
+  const sel = document.getElementById('assign-slot-select');
+  if(!sel) return;
+  const available = allSlots.filter(s=>s.status==='available');
+  if(!available.length){ sel.innerHTML='<option value="">No available slots</option>'; return; }
+  sel.innerHTML = available.map(s=>`<option value="${s.id}">${fmtDate(s.date)} ${s.start}–${s.end}${s.service?' ('+s.service+')':''}</option>`).join('');
+}
+
+/* =============================================
+   CLIENT PORTAL MESSAGES (Admin side)
+   ============================================= */
+async function renderPortalChatList(){
+  // Gather all portal conversations from localStorage
+  const list = document.getElementById('portal-chat-list');
+  if(!list) return;
+  const allKeys = [];
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('sh_portal_chat_')) allKeys.push(k);
+  }
+  if(!allKeys.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">🔐</div><div class="empty-title">No portal conversations yet</div><div class="empty-sub">When clients log in and send messages from their portal, they will appear here.</div></div>`;
+    return;
+  }
+  const conversations = [];
+  for(const k of allKeys){
+    try{
+      const msgs = JSON.parse(localStorage.getItem(k)||'[]');
+      if(!msgs.length) continue;
+      // Always use email stored in the message itself — never reconstruct from key
+      const email = msgs.find(m=>m.email)?.email || k.replace('sh_portal_chat_','');
+      conversations.push({ key:k, email, msgs });
+    }catch(e){}
+  }
+  // Sort by most recent message
+  conversations.sort((a,b)=>{
+    const ta = a.msgs[a.msgs.length-1]?.ts||'';
+    const tb = b.msgs[b.msgs.length-1]?.ts||'';
+    return tb.localeCompare(ta);
+  });
+  
+  list.innerHTML = conversations.map((conv,ci)=>{
+    const unread = conv.msgs.filter(m=>m.role==='client'&&!m.adminRead).length;
+    const last = conv.msgs[conv.msgs.length-1];
+    return `<div class="chat-item ${unread?'unread':''}" id="pchat-item-${ci}">
+      <div class="chat-item-header" onclick="expandPortalChat(${ci})" style="cursor:pointer;display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);">
+        <div style="width:34px;height:34px;border-radius:50%;background:rgba(184,146,42,.15);border:1px solid rgba(184,146,42,.25);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--gold);flex-shrink:0;">🔐</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.82rem;font-weight:500;color:var(--cream);">${esc(conv.email)}</div>
+          <div style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${last?esc(last.text.substr(0,60)):''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;">
+          ${unread?`<span style="background:var(--gold);color:#0d0b10;font-size:.58rem;font-weight:700;padding:.15rem .45rem;border-radius:99px;">${unread} new</span>`:''}
+          <span style="font-size:.62rem;color:var(--muted);">${last?fmtTime(last.ts):''}</span>
+          <span style="font-size:.7rem;color:var(--muted);">▾</span>
+        </div>
+      </div>
+      <div class="chat-body" id="pchat-body-${ci}" style="display:none;padding:1rem;">
+        <div style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;" id="pchat-msgs-${ci}">
+          ${conv.msgs.map(m=>`
+            <div style="display:flex;justify-content:${m.role==='admin'?'flex-end':'flex-start'};">
+              <div style="max-width:75%;background:${m.role==='admin'?'rgba(184,146,42,.15)':'rgba(255,255,255,.05)'};border:1px solid ${m.role==='admin'?'rgba(184,146,42,.25)':'rgba(255,255,255,.08)'};padding:.55rem .8rem;border-radius:4px;font-size:.78rem;line-height:1.6;">
+                <div style="font-size:.6rem;color:var(--muted);margin-bottom:.25rem;">${m.role==='admin'?'You (Admin)':'Client'} · ${fmtTime(m.ts)}</div>
+                ${esc(m.text)}
+              </div>
+            </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:.5rem;">
+          <input class="reply-textarea" id="pchat-reply-${ci}" placeholder="Reply to client…" style="flex:1;padding:.5rem .75rem;min-height:unset;height:38px;resize:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPortalReply('${conv.key}',${ci});}"/>
+          <button class="btn-send-reply" onclick="sendPortalReply('${conv.key}',${ci})" style="height:38px;white-space:nowrap;">↩ Reply</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function expandPortalChat(ci){
+  const body = document.getElementById('pchat-body-'+ci);
+  if(!body) return;
+  const isOpen = body.style.display!=='none';
+  body.style.display = isOpen?'none':'block';
+  if(!isOpen){
+    // Mark all client messages in this conversation as adminRead
+    const item = document.getElementById('pchat-item-'+ci);
+    if(item){
+      // Find the storage key from the onclick of send button
+      const btn = item.querySelector('.btn-send-reply');
+      if(btn){
+        const match = btn.getAttribute('onclick')?.match(/sendPortalReply\('([^']+)'/);
+        if(match){
+          const storageKey = match[1];
+          try {
+            const msgs = JSON.parse(localStorage.getItem(storageKey)||'[]');
+            let changed = false;
+            msgs.forEach(m=>{ if(m.role==='client'&&!m.adminRead){ m.adminRead=true; changed=true; } });
+            if(changed){
+              localStorage.setItem(storageKey, JSON.stringify(msgs));
+              renderSidebar();
+              // Remove unread badge from this item
+              item.querySelector('[style*="background:var(--gold)"]')?.remove();
+            }
+          } catch(e){}
+        }
+      }
+    }
+    // Scroll messages to bottom
+    setTimeout(()=>{
+      const msgsEl = document.getElementById('pchat-msgs-'+ci);
+      if(msgsEl) msgsEl.scrollTop = msgsEl.scrollHeight;
+    }, 50);
+  }
+}
+
+async function sendPortalReply(storageKey, ci){
+  const inp = document.getElementById('pchat-reply-'+ci);
+  if(!inp||!inp.value.trim()) return;
+  try {
+    const msgs = JSON.parse(localStorage.getItem(storageKey)||'[]');
+    const email = msgs.find(m=>m.email)?.email || '';
+    const clientName = msgs.find(m=>m.role==='client')?.name || (email ? email.split('@')[0] : 'Client');
+    const replyText = inp.value.trim();
+    msgs.push({ role:'admin', text:replyText, ts:new Date().toISOString(), email });
+    msgs.forEach(m=>{ if(m.role==='client') m.adminRead=true; });
+    localStorage.setItem(storageKey, JSON.stringify(msgs));
+    const broadcastKey = storageKey.replace(/^sh_/, '');
+    if(_bc) _bc.postMessage({ key: broadcastKey, val: JSON.stringify(msgs) });
+    // Email notification to client
+    if(email){
+      await adminSendEmail(
+        email, clientName,
+        'New Message in Your Soul Healing Portal',
+        `Your healer has sent you a new message in your Client Portal:\n\n"${replyText}"\n\nLog in to your Client Portal to view and respond.`
+      );
+    }
+    inp.value='';
+    showToast('Reply sent ✓');
+    renderPortalChatList();
+    renderSidebar();
+    setTimeout(()=>expandPortalChat(ci), 50);
+  } catch(e){ showToast('Error sending reply'); }
+}
+
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDetail(); });
+
+/* ============================================================
+   PSYCHOLOGIST TAB
+   ============================================================ */
+let psyFilter = 'all';
+
+function renderPsychTab(){
+  const psychMsgs = allMessages.filter(m=>m.type==='psychology');
+  // Stats
+  const total = psychMsgs.length;
+  const unread = psychMsgs.filter(m=>!m.read).length;
+  const rev = total * 30;
+  const el = id => document.getElementById(id);
+  if(el('psy-stat-total')) el('psy-stat-total').textContent = total;
+  if(el('psy-stat-unread')) el('psy-stat-unread').textContent = unread;
+  if(el('psy-stat-rev')) el('psy-stat-rev').textContent = '$' + rev;
+
+  // Update sidebar badge
+  const psyTabBadge = el('sb-psych-tab');
+  if(psyTabBadge){ psyTabBadge.textContent = total; psyTabBadge.classList.toggle('show', total>0); }
+
+  // Filter + search
+  const q = (el('psy-search')?.value||'').toLowerCase();
+  let list = psychMsgs;
+  if(psyFilter==='unread') list = list.filter(m=>!m.read);
+  else if(psyFilter!=='all') list = list.filter(m=>(m.format||'').includes(psyFilter));
+  if(q) list = list.filter(m=>(m.name||'').toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q));
+
+  const wrap = el('psy-tab-list');
+  if(!wrap) return;
+  if(!list.length){
+    wrap.innerHTML=`<div class="empty-state"><div class="empty-icon">🧠</div><div class="empty-title">No psychologist appointments yet</div><div class="empty-sub">When clients book a psychology consultation at $30/session, their requests will appear here.</div></div>`;
+    return;
+  }
+
+  const fmtDate = d => { try{ return new Date(d+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }catch(e){ return d||'—'; } };
+
+  wrap.innerHTML = list.map(m=>{
+    const realIdx = allMessages.indexOf(m);
+    const formatIcon = {'Video':'📹','Phone':'📞','In-Person':'🏠','Text Chat':'💬'}[m.format]||'🧠';
+    const lengthLabel = {'30':'30 min','60':'60 min','90':'90 min'}[m.length]||((m.length||'60')+' min');
+    return `<div class="section-card ${m.read?'':'unread'}" style="${m.read?'':'border-left:2px solid var(--purple);'}">
+      <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+        <div style="width:42px;height:42px;border-radius:50%;background:rgba(155,109,206,.12);border:1px solid rgba(155,109,206,.3);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🧠</div>
+        <div style="flex:1;min-width:180px;">
+          <div style="font-weight:500;font-size:.9rem;color:var(--cream);">${esc(m.name||'—')}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:1px;">${esc(m.email||'')}${m.phone?` · ${esc(m.phone)}`:''}</div>
+          <div style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.4rem;">
+            <span style="background:rgba(155,109,206,.12);color:var(--purple);border:1px solid rgba(155,109,206,.2);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;">${esc(m.concern||'—')}</span>
+            <span style="background:rgba(91,155,213,.08);color:var(--blue);border:1px solid rgba(91,155,213,.18);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;">${formatIcon} ${esc(m.format||'—')}</span>
+            <span style="background:rgba(255,255,255,.04);color:var(--muted);border:1px solid rgba(255,255,255,.08);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;">⏱ ${lengthLabel}</span>
+            <span style="background:rgba(76,175,116,.08);color:var(--green);border:1px solid rgba(76,175,116,.18);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;">💰 $30</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:.7rem;color:var(--muted);">${fmtTime(m.ts)}</div>
+          ${m.date?`<div style="font-size:.72rem;color:var(--gold-l);margin-top:.25rem;">📅 ${fmtDate(m.date)}</div>`:''}
+          ${m.ref?`<div style="font-size:.65rem;color:var(--muted);margin-top:.2rem;">${esc(m.ref)}</div>`:''}
+        </div>
+      </div>
+      ${m.notes?`<div style="margin-top:.75rem;padding:.65rem .85rem;background:rgba(255,255,255,.025);border:1px solid rgba(155,109,206,.1);border-radius:2px;font-size:.78rem;color:rgba(245,240,232,.55);line-height:1.7;"><span style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(155,109,206,.5);">Notes: </span>${esc(m.notes)}</div>`:''}
+      <div style="display:flex;gap:.5rem;margin-top:.85rem;flex-wrap:wrap;">
+        <button class="btn-view" onclick="viewMsg(${realIdx})">View Details</button>
+        <button class="btn-reply" onclick="event.stopPropagation();openReply(${realIdx})">↩ Reply</button>
+        ${m.read?'':`<button class="btn-view" style="color:var(--green);border-color:rgba(76,175,116,.25);background:rgba(76,175,116,.08);" onclick="markPsychRead(${realIdx})">✓ Mark Read</button>`}
+        <button class="btn-del" onclick="delMsg(${realIdx});renderPsychTab();">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setPsyFilter(f, el){
+  psyFilter = f;
+  document.querySelectorAll('#tab-psychologist .filter-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderPsychTab();
+}
+
+function markPsychRead(idx){
+  allMessages[idx].read = true;
+  storageSet('admin_messages', JSON.stringify(allMessages));
+  renderPsychTab();
+  renderSidebar();
+}
+
+init();
+</script>
+</body>
+</html>
