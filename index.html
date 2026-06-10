@@ -323,6 +323,9 @@ footer a:hover{color:var(--gold);}
 .bk-field textarea{resize:vertical;min-height:72px;font-size:.82rem;}
 .btn-bk-gold{background:var(--gold);color:var(--deep);border:none;padding:.85rem 1.6rem;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;transition:background .2s;width:100%;}
 .btn-bk-gold:hover{background:#cfa535;}
+.bk-stype-btn{background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.65rem .75rem;font-size:.78rem;cursor:pointer;transition:all .2s;border-radius:2px;text-align:center;user-select:none;}
+.bk-stype-btn:hover{background:rgba(184,146,42,.1);border-color:rgba(184,146,42,.4);color:var(--gold);}
+.bk-stype-btn.selected{background:rgba(184,146,42,.18);border-color:var(--gold);color:var(--gold);font-weight:500;}
 .btn-bk-ghost{background:transparent;color:rgba(245,240,232,.35);border:1px solid rgba(255,255,255,.1);padding:.75rem 1.2rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;}
 .btn-bk-ghost:hover{color:var(--cream);border-color:rgba(255,255,255,.25);}
 .bk-btn-row{display:flex;gap:.75rem;justify-content:space-between;align-items:center;margin-top:.25rem;}
@@ -2185,6 +2188,22 @@ body{
       <!-- STEP 1 -->
       <div class="bk-view active" id="bkv0">
         <div class="bk-svc-badge"><div class="bk-svc-icon" id="bk-badge-icon">✦</div><div><div class="bk-svc-name" id="bk-badge-name">Service</div><div class="bk-svc-desc" id="bk-badge-desc">Soul Healing</div></div></div>
+
+        <!-- SESSION TYPE SELECTOR -->
+        <div class="bk-field">
+          <label>Select Session Type *</label>
+          <div id="bk-session-types" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem;">
+            <div class="bk-stype-btn" onclick="bkSelectSession(this,'Black Magic Removal','🔮')">🔮 Black Magic Removal</div>
+            <div class="bk-stype-btn" onclick="bkSelectSession(this,'Spiritual Protection','🛡️')">🛡️ Spiritual Protection</div>
+            <div class="bk-stype-btn" onclick="bkSelectSession(this,'Energy Healing','✨')">✨ Energy Healing</div>
+            <div class="bk-stype-btn" onclick="bkSelectSession(this,'Spiritual Consultation','🌿')">🌿 Spiritual Consultation</div>
+            <div class="bk-stype-btn" onclick="bkSelectSession(this,'Entity & Jinn Removal','👁️')">👁️ Entity & Jinn Removal</div>
+            <div class="bk-stype-btn" onclick="bkSelectSession(this,'Home & Space Cleansing','🏠')">🏠 Home & Space Cleansing</div>
+            <div class="bk-stype-btn" style="grid-column:1/-1;" onclick="bkSelectSession(this,'Psychology Consultation','🧠')">🧠 Psychology Consultation</div>
+          </div>
+          <input type="hidden" id="bk_session_type" />
+        </div>
+
         <div class="bk-row">
           <div class="bk-field"><label>First Name *</label><input type="text" id="bk_fname" placeholder="Sarah"/></div>
           <div class="bk-field"><label>Last Name *</label><input type="text" id="bk_lname" placeholder="Johnson"/></div>
@@ -2192,7 +2211,25 @@ body{
         <div class="bk-field"><label>Email Address *</label><input type="email" id="bk_email" placeholder="sarah@email.com"/></div>
         <div class="bk-field"><label>Phone Number *</label><input type="tel" id="bk_phone" placeholder="+1 (555) 000-0000"/></div>
         <div class="bk-field"><label>Your State *</label><select id="bk_state"><option value="">Select your state…</option><option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option></select></div>
-        <div class="bk-field"><label>Briefly describe your situation</label><textarea id="bk_msg" placeholder="Share what you're experiencing — everything is strictly confidential…"></textarea></div>
+        <div class="bk-field"><label>Describe Your Situation *</label><textarea id="bk_msg" placeholder="Share what you're experiencing — everything is strictly confidential…"></textarea></div>
+
+        <!-- FILE UPLOADS -->
+        <div class="bk-field">
+          <label>Upload Your Photo (optional)</label>
+          <input type="file" id="bk_photo" accept="image/*" style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/>
+          <div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">A photo helps the healer better understand your energy field.</div>
+        </div>
+        <div class="bk-field">
+          <label>Upload Any Relevant Documents (optional)</label>
+          <input type="file" id="bk_docs" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/>
+          <div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">Medical records, previous consultations, or any related documents.</div>
+        </div>
+        <div class="bk-field">
+          <label>Voice / Video Message (optional)</label>
+          <input type="file" id="bk_media" accept="audio/*,video/*" style="background:rgba(255,255,255,.05);border:1px solid rgba(184,146,42,.2);color:rgba(245,240,232,.7);padding:.5rem;width:100%;font-size:.82rem;cursor:pointer;"/>
+          <div style="font-size:.72rem;color:rgba(245,240,232,.35);margin-top:.3rem;">Record a voice or video message to describe your situation.</div>
+        </div>
+
         <button class="btn-bk-gold" onclick="bkStep(1)">Continue to Schedule →</button>
       </div>
       <!-- STEP 2 -->
@@ -3136,9 +3173,36 @@ function bkOpen(idx){
   document.getElementById('fab-root').classList.remove('open');
   document.getElementById('fab-main').classList.remove('open');
 }
+
+function cpOpenBooking(){
+  // Open booking panel from client portal
+  closeClientPortal();
+  setTimeout(()=>{ bkOpen(3); }, 200);
+}
+
+function bkSelectSession(el, name, icon){
+  // Deselect all
+  document.querySelectorAll('.bk-stype-btn').forEach(b=>b.classList.remove('selected'));
+  // Select clicked
+  el.classList.add('selected');
+  document.getElementById('bk_session_type').value = name;
+  // Update badge
+  document.getElementById('bk-badge-icon').textContent = icon;
+  document.getElementById('bk-badge-name').textContent = name;
+  document.getElementById('bkh-title').textContent = name;
+}
 function bkOpenByName(name){ const idx = SVCS.findIndex(s=>s.name===name); bkOpen(idx>=0?idx:3); }
 function bkClose(){ document.getElementById('bk-overlay').classList.remove('active'); document.getElementById('bk-success').classList.remove('active'); document.getElementById('bk-panel').style.display = ''; }
 function bkStep(s){
+  // Validate step 0 before proceeding
+  if(s===1){
+    const stype = document.getElementById('bk_session_type').value;
+    const fname = document.getElementById('bk_fname').value.trim();
+    const email = document.getElementById('bk_email').value.trim();
+    if(!stype){ alert('Please select a session type.'); return; }
+    if(!fname){ alert('Please enter your first name.'); return; }
+    if(!email){ alert('Please enter your email address.'); return; }
+  }
   bkStep_ = s;
   for(let i=0;i<4;i++){
     document.getElementById('bkv'+i).classList.toggle('active', i===s);
@@ -4350,7 +4414,7 @@ function cpRenderBookings(){
         <div style="font-size:2rem;margin-bottom:.75rem;">📅</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;margin-bottom:.4rem;color:rgba(245,240,232,.5);">No Bookings Yet</div>
         <div style="font-size:.82rem;line-height:1.7;">Your upcoming sessions will appear here once the admin assigns a time slot to you.</div>
-        <a href="#contact" onclick="closeClientPortal()" style="display:inline-block;margin-top:1.25rem;background:rgba(184,146,42,.12);border:1px solid rgba(184,146,42,.25);color:var(--gold);padding:.55rem 1.2rem;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:2px;">Request a Session →</a>
+        <button onclick="cpOpenBooking()" style="display:inline-block;margin-top:1.25rem;background:rgba(184,146,42,.12);border:1px solid rgba(184,146,42,.25);color:var(--gold);padding:.55rem 1.2rem;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif;">Request a Session →</button>
       </div>`;
       return;
     }
