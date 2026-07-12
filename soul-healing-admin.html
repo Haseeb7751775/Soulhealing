@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="robots" content="noindex, nofollow"/>
-<title>Soul Healing — Admin</title>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<title>Soul Healing — Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -53,8 +51,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);mi
 
 /* STATS ROW */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.5rem;}
-.stat-card{background:var(--card);border:1px solid var(--border);padding:1rem 1.1rem;transition:border-color .2s,background .2s;}
-.stat-card:hover{background:#1f1a2a;border-color:rgba(184,146,42,.3);}
+.stat-card{background:var(--card);border:1px solid var(--border);padding:1rem 1.1rem;}
 .stat-card-lbl{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;}
 .stat-card-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;line-height:1;}
 .stat-card-sub{font-size:.65rem;color:var(--muted);margin-top:.3rem;}
@@ -228,9 +225,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);mi
 .page-title span{color:var(--gold);}
 
 /* TOAST */
-#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;background:var(--card);border:1px solid rgba(184,146,42,.28);color:var(--cream);font-size:.8rem;padding:.75rem 1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.55);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;border-radius:2px;display:flex;align-items:center;gap:.5rem;}
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;background:var(--card);border:1px solid var(--border);color:var(--cream);font-size:.8rem;padding:.7rem 1.2rem;box-shadow:0 8px 32px rgba(0,0,0,.5);opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;pointer-events:none;}
 #toast.show{opacity:1;transform:none;}
-button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 
 /* SECTION CARD */
 .section-card{background:var(--card);border:1px solid var(--border);padding:1.2rem 1.4rem;margin-bottom:1rem;}
@@ -256,10 +252,12 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
 .conn-banner strong{color:#5b9bd5;}
 .conn-dot-live{width:6px;height:6px;border-radius:50%;background:#4caf74;flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
 </style>
+<div class="conn-banner"><span class="conn-dot-live"></span>Connected to <strong>Soul Healing Client Site</strong> via shared browser storage — bookings, contacts, and chat messages appear here in real time. &nbsp;|&nbsp; <a href="soul-healing-client.html" target="_blank" style="color:#5b9bd5;text-decoration:underline;cursor:pointer;">Open Client Site ↗</a></div>
 <div class="topbar">
   <div class="topbar-logo">Soul <span>Healing</span></div>
   <div class="topbar-badge">Admin Panel</div>
   <div class="topbar-right">
+    <a href="soul-healing-client.html" target="_blank" style="background:rgba(184,146,42,.1);border:1px solid rgba(184,146,42,.25);color:var(--gold);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:background .2s;display:inline-block;" onmouseover="this.style.background='rgba(184,146,42,.22)'" onmouseout="this.style.background='rgba(184,146,42,.1)'">↗ Client Site</a>
     <span class="live-dot"></span><span class="live-label">Live</span>
     <span class="unread-pill" id="unread-pill">0 new</span>
     <button class="btn-refresh" onclick="loadMessages()">↻ Refresh</button>
@@ -271,11 +269,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
   <div class="sidebar">
     <div class="sb-section">Inbox</div>
     <div class="sb-item active" id="nav-all" onclick="showTab('messages','all',this)"><span class="sb-icon">◈</span>All Messages<span class="sb-count show" id="sb-all">0</span></div>
-    <div class="sb-item" id="nav-contact" onclick="showTab('messages','contact',this)"><span class="sb-icon">✉</span>Contact Forms<span class="sb-count" id="sb-contact">0</span></div>
-    <div class="sb-item" id="nav-booking" onclick="showTab('messages','booking',this)"><span class="sb-icon">✦</span>Bookings<span class="sb-count" id="sb-booking">0</span></div>
-    <div class="sb-item" id="nav-chat" onclick="showTab('messages','chat',this)"><span class="sb-icon">☽</span>Chat Threads<span class="sb-count" id="sb-chat">0</span></div>
-    <div class="sb-item" id="nav-psychology" onclick="showTab('messages','psychology',this)"><span class="sb-icon">🧠</span>Psychologist<span class="sb-count" id="sb-psychology">0</span></div>
-    <div class="sb-item" id="nav-unread" onclick="showTab('messages','unread',this)"><span class="sb-icon">●</span>Unread<span class="sb-count" id="sb-unread">0</span></div>
+    <div class="sb-item" id="nav-contact" onclick="showTab('messages','contact',this)" style="display:none;"><span class="sb-icon">✉</span>Contact Forms<span class="sb-count" id="sb-contact">0</span></div>
+    <div class="sb-item" id="nav-booking" onclick="showTab('messages','booking',this)" style="display:none;"><span class="sb-icon">✦</span>Bookings<span class="sb-count" id="sb-booking">0</span></div>
+    <div class="sb-item" id="nav-chat" onclick="showTab('messages','chat',this)" style="display:none;"><span class="sb-icon">☽</span>Chat Threads<span class="sb-count" id="sb-chat">0</span></div>
+    <div class="sb-item" id="nav-psychology" onclick="showTab('messages','psychology',this)" style="display:none;"><span class="sb-icon">🧠</span>Psychologist<span class="sb-count" id="sb-psychology">0</span></div>
+    <div class="sb-item" id="nav-unread" onclick="showTab('messages','unread',this)" style="display:none;"><span class="sb-icon">●</span>Unread<span class="sb-count" id="sb-unread">0</span></div>
 
     <div class="sb-section">Management</div>
     <div class="sb-item" id="nav-clients" onclick="showTab('clients','',this)"><span class="sb-icon">👤</span>Clients</div>
@@ -446,7 +444,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
       <!-- Payment Details -->
       <div class="account-card" style="grid-column:1/-1;">
         <div class="account-card-title">💸 Payment Details — What Clients See</div>
-        <p style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1.25rem;">Set your personal payment handles below. These are shown to clients during the booking flow when they choose a payment method. Leave a field blank to hide that payment option from clients.</p>
+        <p style="font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1.25rem;">Set your personal payment handles below. These are shown to clients during the booking flow when they choose a payment method. Leave a field blank to hide that payment option from clients. Optionally, pick a tag to auto-apply to any booking paid via that method.</p>
 
         <div class="account-grid" style="gap:1.5rem;">
           <div>
@@ -455,10 +453,30 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
               <label>Your $Cashtag</label>
               <input type="text" id="pay-cashapp" placeholder="e.g. $YourName"/>
             </div>
+            <div class="field-group">
+              <label>Tag bookings paid via CashApp</label>
+              <select id="pay-cashapp-tag">
+                <option value="">— None —</option>
+                <option value="paid">✓ Paid</option>
+                <option value="followup">↺ Follow Up</option>
+                <option value="vip">⭐ VIP</option>
+                <option value="new">✦ New</option>
+              </select>
+            </div>
             <div class="section-card-title" style="margin-bottom:.85rem;margin-top:1rem;">🟢 Chime</div>
             <div class="field-group">
               <label>Chime Email or Phone</label>
               <input type="text" id="pay-chime" placeholder="e.g. you@email.com or +1 555 000 0000"/>
+            </div>
+            <div class="field-group">
+              <label>Tag bookings paid via Chime</label>
+              <select id="pay-chime-tag">
+                <option value="">— None —</option>
+                <option value="paid">✓ Paid</option>
+                <option value="followup">↺ Follow Up</option>
+                <option value="vip">⭐ VIP</option>
+                <option value="new">✦ New</option>
+              </select>
             </div>
           </div>
           <div>
@@ -467,10 +485,30 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
               <label>Zelle Email or Phone</label>
               <input type="text" id="pay-zelle" placeholder="e.g. you@email.com or +1 555 000 0000"/>
             </div>
+            <div class="field-group">
+              <label>Tag bookings paid via Zelle</label>
+              <select id="pay-zelle-tag">
+                <option value="">— None —</option>
+                <option value="paid">✓ Paid</option>
+                <option value="followup">↺ Follow Up</option>
+                <option value="vip">⭐ VIP</option>
+                <option value="new">✦ New</option>
+              </select>
+            </div>
             <div class="section-card-title" style="margin-bottom:.85rem;margin-top:1rem;">🅿 PayPal</div>
             <div class="field-group">
               <label>PayPal Email or Link</label>
               <input type="text" id="pay-paypal" placeholder="e.g. paypal.me/YourName"/>
+            </div>
+            <div class="field-group">
+              <label>Tag bookings paid via PayPal</label>
+              <select id="pay-paypal-tag">
+                <option value="">— None —</option>
+                <option value="paid">✓ Paid</option>
+                <option value="followup">↺ Follow Up</option>
+                <option value="vip">⭐ VIP</option>
+                <option value="new">✦ New</option>
+              </select>
             </div>
           </div>
         </div>
@@ -478,6 +516,26 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
         <div class="field-group" style="margin-top:1rem;">
           <label>🏦 Bank Transfer Note</label>
           <textarea id="pay-bank" rows="2" placeholder="e.g. Please email info@you.com after transfer, referencing your booking ID."></textarea>
+        </div>
+        <div class="field-group">
+          <label>Tag bookings paid via Bank Transfer</label>
+          <select id="pay-bank-tag">
+            <option value="">— None —</option>
+            <option value="paid">✓ Paid</option>
+            <option value="followup">↺ Follow Up</option>
+            <option value="vip">⭐ VIP</option>
+            <option value="new">✦ New</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Tag bookings paid via Account Transfer</label>
+          <select id="pay-account-tag">
+            <option value="">— None —</option>
+            <option value="paid">✓ Paid</option>
+            <option value="followup">↺ Follow Up</option>
+            <option value="vip">⭐ VIP</option>
+            <option value="new">✦ New</option>
+          </select>
         </div>
         <div class="field-group">
           <label>💬 General Payment Note (shown to all clients)</label>
@@ -489,6 +547,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
           <div id="pay-preview" style="background:rgba(255,255,255,.03);border:1px solid var(--border);padding:.85rem 1rem;border-radius:2px;font-size:.8rem;line-height:2;color:rgba(245,240,232,.7);"></div>
         </div>
       </div>
+
 
       <!-- Payment Tag Management -->
       <div class="account-card" style="grid-column:1/-1;">
@@ -725,30 +784,6 @@ const TAG_PRESETS = [
 ];
 
 /* =============================================
-   EMAILJS CONFIG
-   ============================================= */
-const EMAILJS_PUBLIC_KEY    = 'OMWsY_I8-iwVAGi5X';
-const EMAILJS_SERVICE_ID    = 'service_bih2em6';
-const EMAILJS_NOTIF_TEMPLATE = 'q9qypwx';  // admin notification template
-
-try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) { console.warn('EmailJS init failed', e); }
-
-async function adminSendEmail(toEmail, toName, subject, message){
-  try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NOTIF_TEMPLATE, {
-      to_email: toEmail,
-      to_name: toName || toEmail.split('@')[0],
-      notif_subject: subject,
-      notif_message: message
-    });
-    return true;
-  } catch(e){
-    console.warn('EmailJS notification failed:', e);
-    return false;
-  }
-}
-
-/* =============================================
    STORAGE HELPERS — localStorage + BroadcastChannel
    ============================================= */
 const _bc = (() => { try { return new BroadcastChannel('soul_healing_sync'); } catch(e){ return null; } })();
@@ -767,22 +802,10 @@ async function storageSet(key, val, shared=false){
   } catch(e){ return null; }
 }
 
-// Announce to launcher that admin tab is open
-if(_bc){
-  _bc.postMessage({ key:'__tab_hello__', role:'admin' });
-  window.addEventListener('beforeunload', ()=>_bc.postMessage({ key:'__tab_bye__', role:'admin' }));
-}
-
 // Listen for changes from client tab and auto-refresh
 if(_bc) _bc.addEventListener('message', (e) => {
   if(!e.data) return;
   const { key } = e.data;
-
-  // Launcher pinging to check if this tab is open
-  if(key === '__launcher_ping__'){
-    _bc.postMessage({ key:'__tab_hello__', role:'admin' });
-    return;
-  }
 
   // New contact/booking/chat from client side
   if(key === 'admin_messages') {
@@ -947,7 +970,7 @@ function renderTable(){
       <td><div class="tbl-actions">
         <button class="btn-view" onclick="viewMsg(${realIdx})">View</button>
         ${replyBtn}
-        <button class="btn-del" onclick="delMsg(${realIdx})">Delete</button>
+        <button class="btn-del" onclick="delMsg(${realIdx})">Del</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1105,25 +1128,14 @@ async function sendReply(idx){
   const m = allMessages[idx];
   const textEl = document.getElementById('reply-text-'+idx);
   if(!textEl||!textEl.value.trim()) return;
-  const replyText = textEl.value.trim();
   if(!m.adminReplies) m.adminReplies = [];
-  m.adminReplies.push({ text: replyText, ts: new Date().toISOString() });
+  m.adminReplies.push({ text: textEl.value.trim(), ts: new Date().toISOString() });
   textEl.value = '';
   await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  // Broadcast so client chat widget picks up the reply immediately
   if(_bc) _bc.postMessage({ key: 'admin_messages', val: JSON.stringify(allMessages) });
-
-  // Send email notification to client
-  if(m.email){
-    const sent = await adminSendEmail(
-      m.email,
-      m.name || m.email.split('@')[0],
-      'New Reply from Soul Healing',
-      `You have a new reply from your healer:\n\n"${replyText}"\n\nLog in to your Client Portal to view the full conversation and respond.`
-    );
-    showToast(sent ? 'Reply sent & email notification delivered ✓' : 'Reply sent ✓ (email notification failed)');
-  } else {
-    showToast('Reply sent ✓');
-  }
+  showToast('Reply sent ✓');
+  // Re-open to refresh
   viewMsg(idx);
 }
 
@@ -1294,23 +1306,15 @@ async function chatReply(idx){
   if(!inp||!inp.value.trim()) return;
   const m = allMessages[idx];
   if(!m) return;
-  const replyText = inp.value.trim();
   if(!m.adminReplies) m.adminReplies = [];
-  m.adminReplies.push({ text: replyText, ts: new Date().toISOString() });
+  m.adminReplies.push({ text: inp.value.trim(), ts: new Date().toISOString() });
   inp.value = '';
   await storageSet('admin_messages', JSON.stringify(allMessages), true);
+  // Broadcast so client chat widget picks up the reply immediately
   if(_bc) _bc.postMessage({ key: 'admin_messages', val: JSON.stringify(allMessages) });
-  // Email notification to client
-  if(m.email){
-    await adminSendEmail(
-      m.email,
-      m.name || m.email.split('@')[0],
-      'New Message from Soul Healing',
-      `Your healer has replied to your message:\n\n"${replyText}"\n\nVisit our website and open the chat widget to continue the conversation.`
-    );
-  }
   showToast('Reply sent ✓');
   renderChatList();
+  // Re-expand
   setTimeout(()=>{
     const item = document.getElementById('chat-item-'+idx);
     if(item&&!item.classList.contains('expanded')) expandChat(idx);
@@ -1352,6 +1356,12 @@ function renderPaymentForm(){
   setVal('pay-paypal',  p.paypal||'');
   setVal('pay-bank',    p.bank||'');
   setVal('pay-note',    p.note||'');
+  setVal('pay-cashapp-tag', p.cashappTag||'');
+  setVal('pay-chime-tag',   p.chimeTag||'');
+  setVal('pay-zelle-tag',   p.zelleTag||'');
+  setVal('pay-paypal-tag',  p.paypalTag||'');
+  setVal('pay-bank-tag',    p.bankTag||'');
+  setVal('pay-account-tag', p.accountTag||'');
 }
 
 function renderPaymentPreview(){
@@ -1365,6 +1375,9 @@ function renderPaymentPreview(){
   if(p.zelle)    lines.push(`💙 <strong>Zelle:</strong> ${esc(p.zelle)}`);
   if(p.paypal)   lines.push(`🅿 <strong>PayPal:</strong> ${esc(p.paypal)}`);
   if(p.bank)     lines.push(`🏦 <strong>Bank Transfer:</strong> ${esc(p.bank)}`);
+  const tagLine = (label, tag) => tag ? `🏷 <em>${esc(label)} bookings auto-tagged: ${esc(tag)}</em>` : null;
+  [tagLine('CashApp', p.cashappTag), tagLine('Chime', p.chimeTag), tagLine('Zelle', p.zelleTag), tagLine('PayPal', p.paypalTag), tagLine('Bank Transfer', p.bankTag), tagLine('Account Transfer', p.accountTag)]
+    .filter(Boolean).forEach(l => lines.push(l));
   if(p.note)     lines.push(`💬 <em>${esc(p.note)}</em>`);
   if(!lines.length){
     wrap.style.display='none'; return;
@@ -1381,6 +1394,12 @@ async function savePaymentDetails(){
     paypal:  (document.getElementById('pay-paypal')?.value||'').trim(),
     bank:    (document.getElementById('pay-bank')?.value||'').trim(),
     note:    (document.getElementById('pay-note')?.value||'').trim(),
+    cashappTag: (document.getElementById('pay-cashapp-tag')?.value||'').trim(),
+    chimeTag:   (document.getElementById('pay-chime-tag')?.value||'').trim(),
+    zelleTag:   (document.getElementById('pay-zelle-tag')?.value||'').trim(),
+    paypalTag:  (document.getElementById('pay-paypal-tag')?.value||'').trim(),
+    bankTag:    (document.getElementById('pay-bank-tag')?.value||'').trim(),
+    accountTag: (document.getElementById('pay-account-tag')?.value||'').trim(),
   };
   await storageSet('admin_payment_details', JSON.stringify(paymentDetails), true);
   if(_bc) _bc.postMessage({ key: 'admin_payment_details', val: JSON.stringify(paymentDetails) });
@@ -1528,9 +1547,9 @@ function startAutoRefresh(){
    ============================================= */
 function showToast(msg){
   const t = document.getElementById('toast');
-  t.innerHTML = `<span style="color:var(--gold);font-size:.7rem;">✦</span> ${msg}`;
+  t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2800);
+  setTimeout(()=>t.classList.remove('show'), 2500);
 }
 
 
@@ -1627,19 +1646,7 @@ async function sendPortalNotification(email, data){
     notifs.unshift({ id:'notif_'+Date.now(), ts:new Date().toISOString(), read:false, ...data });
     localStorage.setItem(key, JSON.stringify(notifs));
     if(_bc) _bc.postMessage({ key:'portal_notif', email, val:JSON.stringify(notifs) });
-
-    // Send email for slot assignment
-    if(data.type === 'slot_assigned'){
-      const name = allMessages.find(m=>m.email===email)?.name || email.split('@')[0];
-      const dateStr = data.date ? new Date(data.date).toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : 'TBD';
-      const timeStr = data.start && data.end ? `${data.start} – ${data.end}` : '';
-      await adminSendEmail(
-        email, name,
-        '✦ Your Session Has Been Scheduled — Soul Healing',
-        `Your session has been confirmed!\n\nService: ${data.service || 'Soul Healing Session'}\nDate: ${dateStr}\nTime: ${timeStr}\nBooking Ref: ${data.bookingRef || 'N/A'}\nAmount: ${data.amount ? '$'+data.amount : 'N/A'}\nPayment Status: ${data.payStatus || 'Pending'}\n\nPlease log in to your Client Portal to view full details and manage your booking.\n\nThank you for choosing Soul Healing.`
-      );
-    }
-  } catch(e){ console.warn('sendPortalNotification error:', e); }
+  } catch(e){}
 }
 
 async function deleteSlot(id){
@@ -1847,21 +1854,13 @@ async function sendPortalReply(storageKey, ci){
   try {
     const msgs = JSON.parse(localStorage.getItem(storageKey)||'[]');
     const email = msgs.find(m=>m.email)?.email || '';
-    const clientName = msgs.find(m=>m.role==='client')?.name || (email ? email.split('@')[0] : 'Client');
-    const replyText = inp.value.trim();
-    msgs.push({ role:'admin', text:replyText, ts:new Date().toISOString(), email });
+    msgs.push({ role:'admin', text:inp.value.trim(), ts:new Date().toISOString(), email });
+    // Mark all client messages as adminRead
     msgs.forEach(m=>{ if(m.role==='client') m.adminRead=true; });
     localStorage.setItem(storageKey, JSON.stringify(msgs));
+    // Broadcast key WITHOUT sh_ prefix so client listener matches portal_chat_* pattern
     const broadcastKey = storageKey.replace(/^sh_/, '');
     if(_bc) _bc.postMessage({ key: broadcastKey, val: JSON.stringify(msgs) });
-    // Email notification to client
-    if(email){
-      await adminSendEmail(
-        email, clientName,
-        'New Message in Your Soul Healing Portal',
-        `Your healer has sent you a new message in your Client Portal:\n\n"${replyText}"\n\nLog in to your Client Portal to view and respond.`
-      );
-    }
     inp.value='';
     showToast('Reply sent ✓');
     renderPortalChatList();
@@ -1936,7 +1935,7 @@ function renderPsychTab(){
         <button class="btn-view" onclick="viewMsg(${realIdx})">View Details</button>
         <button class="btn-reply" onclick="event.stopPropagation();openReply(${realIdx})">↩ Reply</button>
         ${m.read?'':`<button class="btn-view" style="color:var(--green);border-color:rgba(76,175,116,.25);background:rgba(76,175,116,.08);" onclick="markPsychRead(${realIdx})">✓ Mark Read</button>`}
-        <button class="btn-del" onclick="delMsg(${realIdx});renderPsychTab();">Delete</button>
+        <button class="btn-del" onclick="delMsg(${realIdx});renderPsychTab();">Del</button>
       </div>
     </div>`;
   }).join('');
